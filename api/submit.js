@@ -10,10 +10,15 @@ export default async function handler(req, res) {
   if (!endpoint) return res.status(500).json({ ok: false, message: "SHEETS_ENDPOINT is not set" });
 
   try {
+    const parsedBody =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body ?? {});
+
     const r = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(parsedBody),
     });
 
     const text = await r.text();
