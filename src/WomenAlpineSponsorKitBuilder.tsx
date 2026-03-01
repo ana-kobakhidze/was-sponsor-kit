@@ -220,82 +220,82 @@ const emptyData: DataModel = {
 const steps: StepDef[] = [
   {
     key: "coreIdentity",
-    title: "Core identity (Foundation)",
-    subtitle: "Who you are, officially.",
+    title: "ბირთვული იდენტობა (ფუნდამენტი)",
+    subtitle: "ვინ ხართ ოფიციალურად.",
     instruction:
-      "Define the school as an entity sponsors can trust: legal form, leadership, and track record.",
+      "დააფიქსირეთ სკოლა, როგორც სანდო ორგანიზაცია სპონსორებისთვის: იურიდიული ფორმა, ლიდერობა და გამოცდილება.",
     icon: <MountainSnow className="h-4 w-4" />,
   },
   {
     key: "problem",
-    title: "Problem",
-    subtitle: "What gap you solve.",
+    title: "პრობლემა",
+    subtitle: "რომელ ხარვეზს ავსებთ.",
     instruction:
-      "Make the problem measurable: representation, barriers, safety gaps, and evidence links.",
+      "პრობლემა გაზომვადი გახადეთ: წარმომადგენლობა, ბარიერები, უსაფრთხოების ხარვეზები და მტკიცებულებების ბმულები.",
     icon: <Target className="h-4 w-4" />,
   },
   {
     key: "audience",
-    title: "Target audience",
-    subtitle: "Who you serve, exactly.",
+    title: "სამიზნე აუდიტორია",
+    subtitle: "ზუსტად ვის ემსახურებით.",
     instruction:
-      "Be specific about who joins: age range, level, background, and annual cohort size.",
+      "ზუსტად აღწერეთ ვინ ერთვება: ასაკი, დონე, ფონი და წლიური ნაკადის მოცულობა.",
     icon: <Users className="h-4 w-4" />,
   },
   {
     key: "program",
-    title: "Program structure",
-    subtitle: "What participants do.",
+    title: "პროგრამის სტრუქტურა",
+    subtitle: "რას აკეთებენ მონაწილეები.",
     instruction:
-      "Describe the training: schedule, environments, altitude components, and safety protocols.",
+      "აღწერეთ ტრენინგი: განრიგი, გარემო, სიმაღლეზე კომპონენტები და უსაფრთხოების პროტოკოლები.",
     icon: <ListChecks className="h-4 w-4" />,
   },
   {
     key: "budget",
-    title: "Budget reality",
-    subtitle: "Costs and tiers.",
+    title: "ბიუჯეტის რეალობა",
+    subtitle: "ხარჯები და პაკეტები.",
     instruction:
-      "List gear and operational costs, then define sponsorship tiers sponsors can pick quickly.",
+      "ჩამოწერეთ ეკიპირების და ოპერაციული ხარჯები, შემდეგ განსაზღვრეთ სპონსორობის პაკეტები სწრაფი არჩევისთვის.",
     icon: <Wallet className="h-4 w-4" />,
   },
   {
     key: "impact",
-    title: "Impact measurement",
-    subtitle: "Proof, not vibes.",
+    title: "ზეგავლენის გაზომვა",
+    subtitle: "მტკიცებულება და არა შთაბეჭდილება.",
     instruction:
-      "Pick metrics, set targets, define how you measure, and how often you report back.",
+      "აირჩიეთ მეტრიკები, დასახეთ მიზნები, აღწერეთ გაზომვის მეთოდი და ანგარიშგების სიხშირე.",
     icon: <Ruler className="h-4 w-4" />,
   },
   {
     key: "visibility",
-    title: "Visibility assets",
-    subtitle: "What sponsors get.",
+    title: "ხილვადობის რესურსები",
+    subtitle: "რას იღებს სპონსორი.",
     instruction:
-      "Show your channels and deliverables: brand assets, content plan, and sponsor benefits.",
+      "აჩვენეთ თქვენი არხები და შედეგები: ბრენდის მასალები, კონტენტის გეგმა და სპონსორის სარგებელი.",
     icon: <ImageIcon className="h-4 w-4" />,
   },
   {
     key: "partnerships",
-    title: "Partnerships",
-    subtitle: "Who backs you.",
+    title: "პარტნიორობები",
+    subtitle: "ვინ გიჭერთ მხარს.",
     instruction:
-      "List real partners and current status (contacted / confirmed). This builds credibility fast.",
+      "ჩამოთვალეთ რეალური პარტნიორები და მიმდინარე სტატუსი (დაკავშირებული / დადასტურებული). ეს სწრაფად ზრდის სანდოობას.",
     icon: <Handshake className="h-4 w-4" />,
   },
   {
     key: "legalRisk",
-    title: "Legal & risk",
-    subtitle: "Safety + liability.",
+    title: "იურიდიული და რისკი",
+    subtitle: "უსაფრთხოება + პასუხისმგებლობა.",
     instruction:
-      "Document waivers, insurance, emergency protocol, certified instructors, and risk mitigation.",
+      "დააფიქსირეთ თანხმობის ფორმები, დაზღვევა, საგანგებო პროტოკოლი, სერტიფიცირებული ინსტრუქტორები და რისკის შემცირება.",
     icon: <ShieldAlert className="h-4 w-4" />,
   },
   {
     key: "vision",
-    title: "Long-term vision",
-    subtitle: "Where this goes next.",
+    title: "გრძელვადიანი ხედვა",
+    subtitle: "სად მიდის ეს შემდეგ.",
     instruction:
-      "Define whether this is seasonal or annual, how it scales, and how it becomes sustainable.",
+      "განსაზღვრეთ, არის თუ არა ეს სეზონური თუ წლიური, როგორ მასშტაბირდება და როგორ ხდება მდგრადი.",
     icon: <Sparkles className="h-4 w-4" />,
   },
 ];
@@ -312,43 +312,43 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   coreIdentity: [
     {
       key: "officialName",
-      label: "Official name",
-      placeholder: "Women Alpine School (or your final official name)",
+      label: "ოფიციალური დასახელება",
+      placeholder: "ქალთა ალპური სკოლა (ან თქვენი საბოლოო ოფიციალური სახელი)",
       kind: "input",
       required: true,
     },
     {
       key: "legalForm",
-      label: "Legal form",
-      placeholder: "NGO / LLC / informal group",
+      label: "იურიდიული ფორმა",
+      placeholder: "ა(ა)იპ / შპს / არაფორმალური ჯგუფი",
       kind: "input",
       required: true,
     },
     {
       key: "founders",
-      label: "Founders",
-      placeholder: "Names + roles",
+      label: "დამფუძნებლები",
+      placeholder: "სახელები + როლები",
       kind: "textarea",
       required: true,
     },
     {
       key: "instructorCertifications",
-      label: "Instructor certifications",
-      placeholder: "Certifications, licenses, affiliations",
+      label: "ინსტრუქტორების სერტიფიკაციები",
+      placeholder: "სერტიფიკატები, ლიცენზიები, ასოცირებები",
       kind: "textarea",
       required: true,
     },
     {
       key: "yearsOperating",
-      label: "Years operating",
-      placeholder: "e.g., 1, 2, 5+ (or 'starting this season')",
+      label: "მოქმედების წლები",
+      placeholder: "მაგ.: 1, 2, 5+ (ან „ამ სეზონიდან ვიწყებთ“)",
       kind: "input",
       required: true,
     },
     {
       key: "previousExpeditionsHistory",
-      label: "Previous expeditions / training history",
-      placeholder: "List notable trainings, trips, outcomes",
+      label: "წინა ექსპედიციების / ტრენინგების ისტორია",
+      placeholder: "ჩამოთვალეთ მნიშვნელოვანი ტრენინგები, გასვლები, შედეგები",
       kind: "textarea",
       required: true,
     },
@@ -356,36 +356,36 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   problem: [
     {
       key: "womenPercent",
-      label: "% women in alpinism",
-      placeholder: "If unknown: estimate + source",
+      label: "ალპინიზმში ქალების %",
+      placeholder: "თუ ზუსტად არ იცით: მიახლოებითი მონაცემი + წყარო",
       kind: "input",
       required: true,
     },
     {
       key: "barriers",
-      label: "Barriers (social / financial / cultural)",
-      placeholder: "What blocks women from entering and staying in alpinism?",
+      label: "ბარიერები (სოციალური / ფინანსური / კულტურული)",
+      placeholder: "რა უშლის ქალებს ხელს ალპინიზმში შესვლასა და დარჩენაში?",
       kind: "textarea",
       required: true,
     },
     {
       key: "safetyGaps",
-      label: "Safety gaps",
-      placeholder: "Training gaps, risk factors, access to skills/mentorship",
+      label: "უსაფრთხოების ხარვეზები",
+      placeholder: "ტრენინგის ხარვეზები, რისკ-ფაქტორები, უნარებსა და მენტორობაზე წვდომა",
       kind: "textarea",
       required: true,
     },
     {
       key: "mediaVisibilityGap",
-      label: "Media visibility gap",
-      placeholder: "What is missing in coverage / role models / storytelling?",
+      label: "მედიახილვადობის დეფიციტი",
+      placeholder: "რა აკლია გაშუქებაში / როლურ მოდელებში / ამბის თხრობაში?",
       kind: "textarea",
       required: true,
     },
     {
       key: "evidenceLinks",
-      label: "Evidence / links",
-      placeholder: "Links to stats, articles, reports, or credible observations",
+      label: "მტკიცებულებები / ბმულები",
+      placeholder: "ბმულები სტატისტიკაზე, სტატიებზე, ანგარიშებზე ან სარწმუნო დაკვირვებებზე",
       kind: "textarea",
       required: true,
     },
@@ -393,36 +393,36 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   audience: [
     {
       key: "ageRange",
-      label: "Age range",
-      placeholder: "e.g., 18–25, 25–40, mixed",
+      label: "ასაკობრივი დიაპაზონი",
+      placeholder: "მაგ.: 18–25, 25–40, შერეული",
       kind: "input",
       required: true,
     },
     {
       key: "level",
-      label: "Beginner / intermediate / mixed",
-      placeholder: "Beginner / Intermediate / Mixed",
+      label: "დამწყები / საშუალო / შერეული",
+      placeholder: "დამწყები / საშუალო / შერეული",
       kind: "input",
       required: true,
     },
     {
       key: "urbanRural",
-      label: "Urban / rural",
-      placeholder: "Urban / Rural / Mixed",
+      label: "ქალაქი / რეგიონი",
+      placeholder: "ქალაქი / რეგიონი / შერეული",
       kind: "input",
       required: true,
     },
     {
       key: "studentProfessional",
-      label: "Student / professional",
-      placeholder: "Students / Professionals / Mixed",
+      label: "სტუდენტი / პროფესიონალი",
+      placeholder: "სტუდენტები / პროფესიონალები / შერეული",
       kind: "input",
       required: true,
     },
     {
       key: "womenPerYear",
-      label: "Women per year",
-      placeholder: "e.g., 12, 20, 40",
+      label: "ქალების რაოდენობა წელიწადში",
+      placeholder: "მაგ.: 12, 20, 40",
       kind: "input",
       required: true,
     },
@@ -430,43 +430,43 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   program: [
     {
       key: "duration",
-      label: "Program duration",
-      placeholder: "e.g., 10 weeks, 3 months, one season",
+      label: "პროგრამის ხანგრძლივობა",
+      placeholder: "მაგ.: 10 კვირა, 3 თვე, ერთი სეზონი",
       kind: "input",
       required: true,
     },
     {
       key: "trainingDaysPerMonth",
-      label: "Training days / month",
-      placeholder: "e.g., 6–8 days/month",
+      label: "სავარჯიშო დღეები / თვეში",
+      placeholder: "მაგ.: 6–8 დღე/თვეში",
       kind: "input",
       required: true,
     },
     {
       key: "indoorOutdoor",
-      label: "Indoor / outdoor",
-      placeholder: "Indoor + Outdoor split",
+      label: "დახურული / ღია სივრცე",
+      placeholder: "დახურული + ღია სივრცის განაწილება",
       kind: "input",
       required: true,
     },
     {
       key: "highAltitudeComponent",
-      label: "High-altitude component",
-      placeholder: "Yes/No + details",
+      label: "მაღალსიმაღლური კომპონენტი",
+      placeholder: "კი/არა + დეტალები",
       kind: "textarea",
       required: true,
     },
     {
       key: "finalExpeditionGoal",
-      label: "Final expedition goal",
-      placeholder: "Target mountain / route / achievement",
+      label: "ფინალური ექსპედიციის მიზანი",
+      placeholder: "სამიზნე მთა / მარშრუტი / მიღწევა",
       kind: "textarea",
       required: true,
     },
     {
       key: "safetyProtocols",
-      label: "Safety protocols",
-      placeholder: "Medical checks, rescue plan, supervision, gear checks",
+      label: "უსაფრთხოების პროტოკოლები",
+      placeholder: "სამედიცინო შემოწმება, სამაშველო გეგმა, ზედამხედველობა, ეკიპირების შემოწმება",
       kind: "textarea",
       required: true,
     },
@@ -474,43 +474,43 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   budget: [
     {
       key: "equipmentListWithQty",
-      label: "Equipment list (with qty)",
-      placeholder: "Harness x12, Helmet x12, Rope x2, etc.",
+      label: "ეკიპირების სია (რაოდენობით)",
+      placeholder: "ქამარი x12, ჩაფხუტი x12, თოკი x2 და ა.შ.",
       kind: "textarea",
       required: true,
     },
     {
       key: "operationalCosts",
-      label: "Operational costs",
-      placeholder: "Transport, permits, coaches, venues, logistics",
+      label: "ოპერაციული ხარჯები",
+      placeholder: "ტრანსპორტი, ნებართვები, მწვრთნელები, ლოკაციები, ლოჯისტიკა",
       kind: "textarea",
       required: true,
     },
     {
       key: "mediaProduction",
-      label: "Media production",
-      placeholder: "Photographer, video, editing, design",
+      label: "მედია წარმოება",
+      placeholder: "ფოტოგრაფი, ვიდეო, მონტაჟი, დიზაინი",
       kind: "textarea",
       required: true,
     },
     {
       key: "emergencyReserve",
-      label: "Emergency reserve",
-      placeholder: "e.g., 10% buffer or fixed amount",
+      label: "საგანგებო რეზერვი",
+      placeholder: "მაგ.: 10%-იანი ბუფერი ან ფიქსირებული თანხა",
       kind: "input",
       required: true,
     },
     {
       key: "totalEstimate",
-      label: "Total estimate",
-      placeholder: "e.g., $12,000 or ₾30,000 (choose one currency and be consistent)",
+      label: "საერთო ბიუჯეტის შეფასება",
+      placeholder: "მაგ.: $12,000 ან ₾30,000 (აირჩიეთ ერთი ვალუტა და დაიცავით ერთიანობა)",
       kind: "input",
       required: true,
     },
     {
       key: "sponsorshipTiers",
-      label: "Sponsorship tiers",
-      placeholder: "Tier names + amounts + benefits",
+      label: "სპონსორობის პაკეტები",
+      placeholder: "პაკეტების სახელები + თანხები + სარგებელი",
       kind: "textarea",
       required: true,
     },
@@ -518,29 +518,29 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   impact: [
     {
       key: "metricsList",
-      label: "Metrics list",
-      placeholder: "Completion rate, certifications earned, expeditions completed, etc.",
+      label: "მეტრიკების სია",
+      placeholder: "დასრულების მაჩვენებელი, მიღებული სერტიფიკატები, შესრულებული ექსპედიციები და ა.შ.",
       kind: "textarea",
       required: true,
     },
     {
       key: "targets",
-      label: "Targets",
-      placeholder: "What success looks like this season",
+      label: "მიზნები",
+      placeholder: "რას ნიშნავს წარმატება ამ სეზონში",
       kind: "textarea",
       required: true,
     },
     {
       key: "howToMeasure",
-      label: "How to measure",
-      placeholder: "Surveys, attendance logs, instructor assessments, certifications",
+      label: "როგორ იზომება",
+      placeholder: "გამოკითხვები, დასწრების ჩანაწერები, ინსტრუქტორის შეფასებები, სერტიფიკაციები",
       kind: "textarea",
       required: true,
     },
     {
       key: "reportingCadence",
-      label: "Reporting cadence",
-      placeholder: "Monthly, end-of-season, per expedition",
+      label: "ანგარიშგების სიხშირე",
+      placeholder: "ყოველთვიურად, სეზონის ბოლოს, ექსპედიციაზე",
       kind: "input",
       required: true,
     },
@@ -548,50 +548,50 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   visibility: [
     {
       key: "instagram",
-      label: "Instagram",
-      placeholder: "@yourhandle or link",
+      label: "ინსტაგრამი",
+      placeholder: "@თქვენი_პროფილი ან ბმული",
       kind: "input",
       required: true,
     },
     {
       key: "website",
-      label: "Website",
-      placeholder: "yourdomain.com or link",
+      label: "ვებსაიტი",
+      placeholder: "თქვენიდომენი.com ან ბმული",
       kind: "input",
       required: true,
     },
     {
       key: "logoBranding",
-      label: "Logo / branding",
-      placeholder: "Describe current status and what exists",
+      label: "ლოგო / ბრენდინგი",
+      placeholder: "აღწერეთ მიმდინარე მდგომარეობა და არსებული მასალები",
       kind: "textarea",
       required: true,
     },
     {
       key: "photoVideoAssets",
-      label: "Photo / video assets",
-      placeholder: "What you already have (or plan to create)",
+      label: "ფოტო / ვიდეო რესურსები",
+      placeholder: "რაც უკვე გაქვთ (ან რის შექმნასაც გეგმავთ)",
       kind: "textarea",
       required: true,
     },
     {
       key: "pressContacts",
-      label: "Press contacts",
-      placeholder: "Journalists, outlets, PR partners",
+      label: "მედია კონტაქტები",
+      placeholder: "ჟურნალისტები, მედიასაშუალებები, PR პარტნიორები",
       kind: "textarea",
       required: true,
     },
     {
       key: "sponsorBenefitsList",
-      label: "Sponsor benefits list",
-      placeholder: "Logo placement, posts, events, gear testing, mentions",
+      label: "სპონსორის სარგებლის სია",
+      placeholder: "ლოგოს განთავსება, პოსტები, ღონისძიებები, აღჭურვილობის ტესტირება, მოხსენიება",
       kind: "textarea",
       required: true,
     },
     {
       key: "contentPlan",
-      label: "Content plan",
-      placeholder: "Posting frequency, key moments, deliverables",
+      label: "კონტენტის გეგმა",
+      placeholder: "პოსტინგის სიხშირე, საკვანძო მომენტები, მიწოდებადი მასალა",
       kind: "textarea",
       required: true,
     },
@@ -599,50 +599,50 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   partnerships: [
     {
       key: "localGuides",
-      label: "Local guides",
-      placeholder: "Names/organizations + status",
+      label: "ადგილობრივი გიდები",
+      placeholder: "სახელები/ორგანიზაციები + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "rescueServices",
-      label: "Rescue services",
-      placeholder: "Who supports safety + status",
+      label: "სამაშველო სერვისები",
+      placeholder: "ვინ უზრუნველყოფს უსაფრთხოებას + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "federations",
-      label: "Federations",
-      placeholder: "National/regional federations + status",
+      label: "ფედერაციები",
+      placeholder: "ეროვნული/რეგიონული ფედერაციები + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "womenNGOs",
-      label: "Women NGOs",
-      placeholder: "NGOs + status",
+      label: "ქალთა NGO-ები",
+      placeholder: "ორგანიზაციები + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "universities",
-      label: "Universities",
-      placeholder: "Partners + status",
+      label: "უნივერსიტეტები",
+      placeholder: "პარტნიორები + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "outdoorShops",
-      label: "Outdoor shops",
-      placeholder: "Shops/brands + status",
+      label: "გარე სპორტის მაღაზიები",
+      placeholder: "მაღაზიები/ბრენდები + სტატუსი",
       kind: "textarea",
       required: true,
     },
     {
       key: "statusNotes",
-      label: "Status notes",
-      placeholder: "Contacted / confirmed / next steps",
+      label: "სტატუსის შენიშვნები",
+      placeholder: "დაკავშირებული / დადასტურებული / შემდეგი ნაბიჯები",
       kind: "textarea",
       required: true,
     },
@@ -650,36 +650,36 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   legalRisk: [
     {
       key: "waivers",
-      label: "Waivers",
-      placeholder: "Waiver approach and required signatures",
+      label: "თანხმობის ფორმები",
+      placeholder: "თანხმობის ფორმების მიდგომა და სავალდებულო ხელმოწერები",
       kind: "textarea",
       required: true,
     },
     {
       key: "insurance",
-      label: "Insurance",
-      placeholder: "Insurance coverage and provider plan",
+      label: "დაზღვევა",
+      placeholder: "დაზღვევის დაფარვა და პროვაიდერის გეგმა",
       kind: "textarea",
       required: true,
     },
     {
       key: "emergencyProtocol",
-      label: "Emergency protocol",
-      placeholder: "Emergency plan, escalation, rescue coordination",
+      label: "საგანგებო პროტოკოლი",
+      placeholder: "საგანგებო გეგმა, ესკალაცია, სამაშველოს კოორდინაცია",
       kind: "textarea",
       required: true,
     },
     {
       key: "certifiedInstructors",
-      label: "Certified instructors",
-      placeholder: "Who is certified and what level",
+      label: "სერტიფიცირებული ინსტრუქტორები",
+      placeholder: "ვინ არის სერტიფიცირებული და რა დონით",
       kind: "textarea",
       required: true,
     },
     {
       key: "riskMitigation",
-      label: "Risk mitigation",
-      placeholder: "Concrete steps to reduce risk",
+      label: "რისკის შემცირება",
+      placeholder: "რისკის შესამცირებელი კონკრეტული ნაბიჯები",
       kind: "textarea",
       required: true,
     },
@@ -687,29 +687,29 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   vision: [
     {
       key: "oneSeasonVsAnnual",
-      label: "One-season vs annual",
-      placeholder: "One season pilot or annual program",
+      label: "ერთი სეზონი თუ წლიური",
+      placeholder: "ერთსეზონიანი პილოტი თუ წლიური პროგრამა",
       kind: "input",
       required: true,
     },
     {
       key: "expansionPlan",
-      label: "Expansion plan",
-      placeholder: "How you scale beyond the first cohort",
+      label: "გაფართოების გეგმა",
+      placeholder: "როგორ მასშტაბირდებით პირველი ნაკადის შემდეგ",
       kind: "textarea",
       required: true,
     },
     {
       key: "futureExpeditionTeam",
-      label: "Future expedition team",
-      placeholder: "How alumni move into expedition teams",
+      label: "მომავალი ექსპედიციის გუნდი",
+      placeholder: "როგორ გადადიან კურსდამთავრებულები ექსპედიციის გუნდებში",
       kind: "textarea",
       required: true,
     },
     {
       key: "sustainabilityPlan",
-      label: "Sustainability plan",
-      placeholder: "How this continues financially and operationally",
+      label: "მდგრადობის გეგმა",
+      placeholder: "როგორ გაგრძელდება ეს ფინანსურად და ოპერაციულად",
       kind: "textarea",
       required: true,
     },
@@ -757,15 +757,15 @@ function validateStep(data: DataModel, key: StepKey) {
 
 function pickBullets(data: DataModel) {
   const pool: Array<{ label: string; value: string }> = [
-    { label: "Barriers", value: data.problem.barriers },
-    { label: "Safety gaps", value: data.problem.safetyGaps },
-    { label: "Program", value: data.program.finalExpeditionGoal },
-    { label: "Safety", value: data.program.safetyProtocols },
-    { label: "Impact", value: data.impact.metricsList },
-    { label: "Sponsor benefits", value: data.visibility.sponsorBenefitsList },
-    { label: "Partners", value: data.partnerships.statusNotes },
-    { label: "Risk mitigation", value: data.legalRisk.riskMitigation },
-    { label: "Vision", value: data.vision.expansionPlan },
+    { label: "ბარიერები", value: data.problem.barriers },
+    { label: "უსაფრთხოების ხარვეზები", value: data.problem.safetyGaps },
+    { label: "პროგრამა", value: data.program.finalExpeditionGoal },
+    { label: "უსაფრთხოება", value: data.program.safetyProtocols },
+    { label: "ზეგავლენა", value: data.impact.metricsList },
+    { label: "სპონსორის სარგებელი", value: data.visibility.sponsorBenefitsList },
+    { label: "პარტნიორები", value: data.partnerships.statusNotes },
+    { label: "რისკის შემცირება", value: data.legalRisk.riskMitigation },
+    { label: "ხედვა", value: data.vision.expansionPlan },
   ];
 
   const bullets = pool
@@ -809,7 +809,7 @@ async function postSubmission(payload: any) {
   if (!res.ok) {
     return { ok: false as const, skipped: false as const, message: text || `HTTP ${res.status}` };
   }
-  return { ok: true as const, skipped: false as const, message: text || "Saved." };
+  return { ok: true as const, skipped: false as const, message: text || "შენახულია." };
 }
 
 export default function WomenAlpineSponsorKitBuilder() {
@@ -912,12 +912,12 @@ export default function WomenAlpineSponsorKitBuilder() {
     if (!check.ok) {
       setSubmitState({
         status: "error",
-        message: `Missing required: ${check.missing.join(", ")}`,
+        message: `სავალდებულო ველები აკლია: ${check.missing.join(", ")}`,
       });
       return;
     }
 
-    setSubmitState({ status: "saving", message: "Saving…" });
+    setSubmitState({ status: "saving", message: "ინახება…" });
 
     const payload = {
       timestamp: new Date().toISOString(),
@@ -939,21 +939,21 @@ export default function WomenAlpineSponsorKitBuilder() {
     try {
       const res = await postSubmission(payload);
       if (!res.ok) {
-        setSubmitState({ status: "error", message: res.message || "Save failed." });
+        setSubmitState({ status: "error", message: res.message || "შენახვა ვერ მოხერხდა." });
         return;
       }
       setSubmitted((p) => ({ ...p, [activeKey]: true }));
-      setSubmitState({ status: "success", message: "Saved ✅" });
+      setSubmitState({ status: "success", message: "შენახულია ✅" });
     } catch (e: any) {
       setSubmitState({
         status: "error",
-        message: e?.message ? String(e.message) : "Save failed.",
+        message: e?.message ? String(e.message) : "შენახვა ვერ მოხერხდა.",
       });
     }
   }
 
   const preview = React.useMemo(() => {
-    const name = data.coreIdentity.officialName || "Women Alpine School";
+    const name = data.coreIdentity.officialName || "ქალთა ალპური სკოლა";
     const cohort = data.audience.womenPerYear || "—";
     const duration = data.program.duration || "—";
     const budget = data.budget.totalEstimate || "—";
@@ -991,14 +991,14 @@ export default function WomenAlpineSponsorKitBuilder() {
               <MountainSnow className="h-4 w-4 text-slate-200" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Women Alpine School – Sponsor Kit Builder</div>
-              <div className="text-xs text-slate-400">Aim for 80%+ before approaching sponsors.</div>
+              <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა – სპონსორების ქითის კონსტრუქტორი</div>
+              <div className="text-xs text-slate-400">სპონსორებთან გასვლამდე მიაღწიეთ 80%+ შევსებას.</div>
             </div>
           </div>
 
           <div className="ml-auto flex w-[520px] flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Overall completeness</span>
+              <span className="text-slate-400">საერთო შევსების დონე</span>
               <span className="font-medium text-white">{overall}%</span>
             </div>
             <Progress value={overall} />
@@ -1011,7 +1011,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                 overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
               )}
             >
-              {overall >= 80 ? "Sponsor-ready range" : "Draft"}
+              {overall >= 80 ? "სპონსორისთვის მზად" : "დრაფტი"}
             </Badge>
           </div>
         </div>
@@ -1028,7 +1028,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search sections…"
+                  placeholder="სექციების ძიება…"
                   className="pl-9 bg-slate-950/40 border-white/10 text-slate-200 placeholder:text-slate-500"
                 />
               </div>
@@ -1065,7 +1065,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                             <div className="truncate text-sm font-semibold text-white">{s.title}</div>
                             {done && (
                               <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
-                                Submitted
+                                გაგზავნილი
                               </Badge>
                             )}
                           </div>
@@ -1100,7 +1100,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
                 >
                   <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
+                  უკან
                 </Button>
                 <Button
                   variant="secondary"
@@ -1108,7 +1108,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   disabled={activeIndex === steps.length - 1}
                   className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
                 >
-                  Next
+                  შემდეგი
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -1124,14 +1124,14 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      Step {activeIndex + 1} / {steps.length}
+                      ეტაპი {activeIndex + 1} / {steps.length}
                     </Badge>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      {stepPct}% complete
+                      {stepPct}% შევსებული
                     </Badge>
                     {submitted[activeKey] && (
                       <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
-                        Submitted
+                        გაგზავნილი
                       </Badge>
                     )}
                   </div>
@@ -1146,14 +1146,14 @@ export default function WomenAlpineSponsorKitBuilder() {
                     className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
-                    Reset draft
+                    დრაფტის გასუფთავება
                   </Button>
                   <Button
-                    onClick={() => alert("Placeholder: sponsor pitch generator will be added here.")}
+                    onClick={() => alert("დროებითი: აქ დაემატება სპონსორისთვის პიჩის გენერატორი.")}
                     className={gradientButtonClass("h-10")}
                   >
                     <Wand2 className="mr-2 h-4 w-4" />
-                    Generate sponsor pitch text
+                    სპონსორის პიჩის ტექსტის გენერირება
                   </Button>
                 </div>
               </div>
@@ -1179,7 +1179,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                         </label>
                         {missing ? (
                           <Badge className="border border-rose-400/20 bg-rose-500/10 text-rose-200">
-                            Required
+                            სავალდებულო
                           </Badge>
                         ) : null}
                       </div>
@@ -1218,7 +1218,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <div className="min-w-0 flex-1">
                     {submitState.status === "idle" ? (
                       <div className="text-sm text-slate-400">
-                        Submit this step to store it (and snapshot the full draft).
+                        გაგზავნეთ ეს ეტაპი შესანახად (სრული დრაფტის სნეპშოტთან ერთად).
                       </div>
                     ) : submitState.status === "saving" ? (
                       <div className="flex items-center gap-2 text-sm text-slate-300">
@@ -1239,12 +1239,12 @@ export default function WomenAlpineSponsorKitBuilder() {
 
                     {!validation.ok ? (
                       <div className="mt-2 text-xs text-slate-500">
-                        Required fields missing:{" "}
+                        აკლია სავალდებულო ველები:{" "}
                         <span className="text-slate-300">{validation.missing.join(", ")}</span>
                       </div>
                     ) : (
                       <div className="mt-2 text-xs text-slate-500">
-                        All required fields look good.
+                        ყველა სავალდებულო ველი შევსებულია.
                       </div>
                     )}
                   </div>
@@ -1252,11 +1252,11 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <div className="flex shrink-0 items-center gap-2">
                     <Button
                       variant="secondary"
-                      onClick={() => alert("Placeholder: will generate a 1-page pitch text block.")}
+                      onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი პიჩის ტექსტის ბლოკი.")}
                       className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
                     >
                       <FileText className="mr-2 h-4 w-4" />
-                      Preview pitch text
+                      პიჩის ტექსტის წინასწარი ნახვა
                     </Button>
 
                     <Button
@@ -1267,12 +1267,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                       {submitState.status === "saving" ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting…
+                          იგზავნება…
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Submit this step
+                          ამ ეტაპის გაგზავნა
                         </>
                       )}
                     </Button>
@@ -1282,14 +1282,14 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-white">Storage note</div>
+                      <div className="text-sm font-semibold text-white">შენახვის შენიშვნა</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        If <span className="text-slate-200">VITE_SHEETS_ENDPOINT</span> is set, submissions will be posted
-                        to your Google Apps Script Web App. Otherwise, it only marks the step as submitted in the UI.
+                        ფორმა აგზავნის მონაცემებს <span className="text-slate-200">/api/submit</span>-ზე, ხოლო სერვერი მათ
+                        გადაამისამართებს <span className="text-slate-200">SHEETS_ENDPOINT</span>-ზე (Google Apps Script).
                       </div>
                     </div>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      No localStorage
+                      localStorage არ გამოიყენება
                     </Badge>
                   </div>
                 </div>
@@ -1304,13 +1304,13 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white">Sponsor-ready preview</div>
+                  <div className="text-sm font-semibold text-white">სპონსორისთვის მზა პრივიუ</div>
                   <div className="mt-1 text-xs text-slate-400">
-                    1-page pitch draft (auto-summarized from filled data)
+                    1-გვერდიანი პიჩის დრაფტი (ავტომატურად შეჯამებული შევსებული მონაცემებიდან)
                   </div>
                 </div>
                 <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                  Live
+                  ცოცხალი
                 </Badge>
               </div>
 
@@ -1320,19 +1320,19 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <div>
                   <div className="text-lg font-semibold text-white">{preview.name}</div>
                   <div className="mt-1 text-sm text-slate-400">
-                    Cohort size: <span className="text-slate-200">{preview.cohort}</span> • Duration:{" "}
+                    ნაკადის ზომა: <span className="text-slate-200">{preview.cohort}</span> • ხანგრძლივობა:{" "}
                     <span className="text-slate-200">{preview.duration}</span>
                   </div>
                   <div className="mt-1 text-sm text-slate-400">
-                    Total budget estimate: <span className="text-slate-200">{preview.budget}</span>
+                    მთლიანი ბიუჯეტის შეფასება: <span className="text-slate-200">{preview.budget}</span>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="text-xs font-semibold text-white">Highlights</div>
+                  <div className="text-xs font-semibold text-white">მთავარი ხაზები</div>
                   {preview.bullets.length === 0 ? (
                     <div className="mt-2 text-sm text-slate-500">
-                      Fill a few sections to see 3–5 bullet highlights here.
+                      შეავსეთ რამდენიმე სექცია და აქ გამოჩნდება 3–5 ძირითადი პუნქტი.
                     </div>
                   ) : (
                     <ul className="mt-2 space-y-2">
@@ -1346,9 +1346,9 @@ export default function WomenAlpineSponsorKitBuilder() {
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="text-xs font-semibold text-white">Sponsor ask (placeholder)</div>
+                  <div className="text-xs font-semibold text-white">სპონსორის შეთავაზება (დროებითი)</div>
                   <div className="mt-2 text-sm text-slate-400">
-                    Your tiers will appear here once filled in <span className="text-slate-200">Budget reality</span>.
+                    თქვენი პაკეტები აქ გამოჩნდება, როცა შეავსებთ <span className="text-slate-200">ბიუჯეტის რეალობას</span>.
                   </div>
                 </div>
               </div>
@@ -1359,11 +1359,11 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white">Suggested sponsors</div>
-                  <div className="mt-1 text-xs text-slate-400">Placeholder list</div>
+                  <div className="text-sm font-semibold text-white">შემოთავაზებული სპონსორები</div>
+                  <div className="mt-1 text-xs text-slate-400">დროებითი სია</div>
                 </div>
                 <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                  Draft
+                  დრაფტი
                 </Badge>
               </div>
 
@@ -1371,11 +1371,11 @@ export default function WomenAlpineSponsorKitBuilder() {
 
               <div className="space-y-2">
                 {[
-                  "Outdoor gear brand (equipment tier)",
-                  "Local bank or fintech (women empowerment)",
-                  "Tourism / travel company (storytelling + reach)",
-                  "University partner (student cohort support)",
-                  "Media partner (visibility + PR)",
+                  "გარე სპორტის ბრენდი (ეკიპირების პაკეტი)",
+                  "ადგილობრივი ბანკი ან ფინტექი (ქალთა გაძლიერება)",
+                  "ტურიზმის / სამოგზაურო კომპანია (ამბის თხრობა + აუდიტორია)",
+                  "უნივერსიტეტის პარტნიორი (სტუდენტური ნაკადის მხარდაჭერა)",
+                  "მედია პარტნიორი (ხილვადობა + PR)",
                 ].map((s, i) => (
                   <div
                     key={i}
@@ -1383,7 +1383,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   >
                     <div className="text-sm text-slate-300">{s}</div>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      Draft
+                      დრაფტი
                     </Badge>
                   </div>
                 ))}
@@ -1394,19 +1394,19 @@ export default function WomenAlpineSponsorKitBuilder() {
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="secondary"
-              onClick={() => alert("Placeholder: generate 1-page PDF.")}
+              onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი PDF.")}
               className="h-11 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
             >
               <FileDown className="mr-2 h-4 w-4" />
-              Generate 1-page PDF
+              1-გვერდიანი PDF-ის გენერირება
             </Button>
 
             <Button
-              onClick={() => alert("Placeholder: export full proposal (10–15 pages).")}
+              onClick={() => alert("დროებითი: სრულ წინადადებად ექსპორტი (10–15 გვერდი).")}
               className={gradientButtonClass("h-11")}
             >
               <FileText className="mr-2 h-4 w-4" />
-              Export full proposal
+              სრული წინადადების ექსპორტი
             </Button>
           </div>
 
@@ -1414,9 +1414,9 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="flex items-start gap-3">
               <Scale className="mt-0.5 h-4 w-4 text-slate-300" />
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-white">Tip</div>
+                <div className="text-sm font-semibold text-white">რჩევა</div>
                 <div className="mt-1 text-xs text-slate-400">
-                  Sponsors don’t fund dreams — they fund clarity. Fill budget + impact + visibility early.
+                  სპონსორები ოცნებებს არ აფინანსებენ, ისინი სიცხადეს აფინანსებენ. თავიდანვე შეავსეთ ბიუჯეტი + ზეგავლენა + ხილვადობა.
                 </div>
               </div>
             </div>
@@ -1428,10 +1428,10 @@ export default function WomenAlpineSponsorKitBuilder() {
       <div className="mx-auto max-w-[1600px] px-6 pb-8">
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">Theme:</span> dark glass • bg #070A12 • cards slate-950/60
+            <span className="text-slate-300">თემა:</span> მუქი გლასი • ფონი #070A12 • ბარათები slate-950/60
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">Endpoint:</span>{" "}
+            <span className="text-slate-300">ენდპოინტი:</span>{" "}
             <span className="text-slate-200">
               /api/submit
             </span>
