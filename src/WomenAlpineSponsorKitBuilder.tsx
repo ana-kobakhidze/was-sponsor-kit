@@ -1072,8 +1072,8 @@ export default function WomenAlpineSponsorKitBuilder() {
                         <div className="flex items-start gap-3">
                           <div
                             className={cx(
-                              "mt-0.5 grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60",
-                              isActive && "bg-slate-950/80"
+                              "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+                              isActive && "border-cyan-300/45 from-cyan-500/20 to-violet-500/20 text-cyan-50"
                             )}
                           >
                             {stepIconMap[s.key]}
@@ -1149,8 +1149,8 @@ export default function WomenAlpineSponsorKitBuilder() {
                       <div className="flex items-start gap-3">
                         <div
                           className={cx(
-                            "mt-0.5 grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60",
-                            isActive && "bg-slate-950/80"
+                            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+                            isActive && "border-cyan-300/45 from-cyan-500/20 to-violet-500/20 text-cyan-50"
                           )}
                         >
                           {stepIconMap[s.key]}
