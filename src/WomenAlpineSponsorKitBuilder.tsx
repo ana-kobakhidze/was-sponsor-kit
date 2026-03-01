@@ -220,10 +220,10 @@ const emptyData: DataModel = {
 const steps: StepDef[] = [
   {
     key: "coreIdentity",
-    title: "ბირთვული იდენტობა (ფუნდამენტი)",
+    title: "იდენტობა",
     subtitle: "ვინ ხართ ოფიციალურად.",
     instruction:
-      "დააფიქსირეთ სკოლა, როგორც სანდო ორგანიზაცია სპონსორებისთვის: იურიდიული ფორმა, ლიდერობა და გამოცდილება.",
+      "სკოლა, როგორც სანდო ორგანიზაცია სპონსორებისთვის: იურიდიული ფორმა, ლიდერობა და გამოცდილება.",
     icon: <MountainSnow className="h-4 w-4" />,
   },
   {
@@ -252,7 +252,7 @@ const steps: StepDef[] = [
   },
   {
     key: "budget",
-    title: "ბიუჯეტის რეალობა",
+    title: "ბიუჯეტი",
     subtitle: "ხარჯები და პაკეტები.",
     instruction:
       "ჩამოწერეთ ეკიპირების და ოპერაციული ხარჯები, შემდეგ განსაზღვრეთ სპონსორობის პაკეტები სწრაფი არჩევისთვის.",
@@ -986,7 +986,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-200">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/40 backdrop-blur">
+      <div className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/40 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60">
@@ -1065,6 +1065,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                         className={cx(
                           "w-full rounded-2xl px-3 py-3 text-left transition",
                           "border border-transparent hover:border-white/10 hover:bg-white/5",
+                          "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
                           isActive && "border-white/10 bg-white/5"
                         )}
                       >
@@ -1138,6 +1139,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       className={cx(
                         "w-full rounded-2xl px-3 py-3 text-left transition",
                         "border border-transparent hover:border-white/10 hover:bg-white/5",
+                        "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
                         isActive && "border-white/10 bg-white/5"
                       )}
                     >
@@ -1210,35 +1212,39 @@ export default function WomenAlpineSponsorKitBuilder() {
         <Card className={glassCardClass("xl:h-[calc(100vh-112px)]")}>
           <div className="flex h-full flex-col">
             <div className="p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="mb-4 rounded-2xl border border-white/10 bg-slate-950/40 p-3 xl:hidden">
+                <div className="mb-2 text-xs font-medium text-slate-400">ნავიგაცია</div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setMobileNavOpen(true)}
+                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                  >
+                    სექციების მენიუ
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={goPrev}
+                    disabled={activeIndex === 0}
+                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    უკან
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={goNext}
+                    disabled={activeIndex === steps.length - 1}
+                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                  >
+                    შემდეგი
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 xl:hidden">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setMobileNavOpen(true)}
-                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-                    >
-                      სექციების მენიუ
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={goPrev}
-                      disabled={activeIndex === 0}
-                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-                    >
-                      <ChevronLeft className="mr-2 h-4 w-4" />
-                      უკან
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={goNext}
-                      disabled={activeIndex === steps.length - 1}
-                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-                    >
-                      შემდეგი
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
                       ეტაპი {activeIndex + 1} / {steps.length}
@@ -1252,11 +1258,13 @@ export default function WomenAlpineSponsorKitBuilder() {
                       </Badge>
                     )}
                   </div>
-                  <h1 className="mt-3 text-xl font-semibold text-white">{activeStep.title}</h1>
-                  <p className="mt-1 text-sm text-slate-400">{activeStep.instruction}</p>
+                  <h1 className="mt-3 max-w-4xl text-xl font-semibold leading-tight text-white xl:text-2xl">
+                    {activeStep.title}
+                  </h1>
+                  <p className="mt-2 max-w-3xl text-sm text-slate-400">{activeStep.instruction}</p>
                 </div>
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:justify-end">
                   <Button
                     variant="secondary"
                     onClick={resetDraft}
