@@ -60,11 +60,20 @@ type StepDef = {
   icon: React.ReactNode;
 };
 
+type HistoryCard = {
+  trainer: string;
+  courseName: string;
+  courseIncluded: string[];
+  format: string;
+  level: string;
+};
+
 type DataModel = {
   coreIdentity: {
     officialName: string;
     legalForm: string;
     founders: string;
+    instructors: string;
     instructorCertifications: string;
     yearsOperating: string;
     previousExpeditionsHistory: string;
@@ -141,11 +150,120 @@ type DataModel = {
 const emptyData: DataModel = {
   coreIdentity: {
     officialName: "",
-    legalForm: "",
-    founders: "",
-    instructorCertifications: "",
+    legalForm: "NGO",
+    founders: "ფოფო ჭელიძე",
+    instructors: "ფოფო ჭელიძე, თემო სამსონაძე, დეა, ლაშა, ტატა მერაბიშვილი",
+    instructorCertifications: "გიდების ასოციაცია",
     yearsOperating: "",
-    previousExpeditionsHistory: "",
+    previousExpeditionsHistory: JSON.stringify([
+      {
+        trainer: "თემო სამსონაძე",
+        courseName: "საბაზისო ალპინისტური მომზადება",
+        format: "თეორია + პრაქტიკა",
+        level: "დამწყები",
+        courseIncluded: [
+          "თოკთან მუშაობის საფუძვლები",
+          "კვანძები და საბელე ტექნიკა",
+          "უსაფრთხოების წესები",
+          "კლდეზე გადაადგილების ტექნიკა",
+        ],
+      },
+      {
+        trainer: "ქეთ ფალიანი",
+        courseName: "ნავიგაცია და მეტეოროლოგია",
+        format: "თეორია + საველე პრაქტიკა",
+        level: "ყველა დონე",
+        courseIncluded: [
+          "რუკისა და კომპასის გამოყენება",
+          "GPS საფუძვლები",
+          "ამინდის შეფასება",
+          "მარშრუტის დაგეგმვა",
+        ],
+      },
+      {
+        trainer: "დეა ფოფო გვარი შემახსენე",
+        courseName: "აღჭურვილობა, ზურგჩანთა და Layering სისტემა",
+        format: "პრაქტიკული ვორქშოპი",
+        level: "ყველა დონე",
+        courseIncluded: [
+          "ზურგჩანთის სწორად ჩალაგება",
+          "წონის ბალანსი და პრიორიტეტები",
+          "სამოსის ფენების პრინციპი (base / mid / shell)",
+          "ამინდის მიხედვით ჩაცმის სტრატეგია",
+        ],
+      },
+      {
+        trainer: "მაჯლაჯუნა ლუ",
+        courseName: "ჯანსაღი კვება და ფიზიკური მომზადება",
+        format: "თეორია + სავარჯიშო გეგმა",
+        level: "ყველა დონე",
+        courseIncluded: [
+          "ენერგიის მართვა მთაში",
+          "საბაზისო სპორტული კვების პრინციპები",
+          "გამძლეობის და ძალის ვარჯიშები",
+          "აღდგენა და ჰიდრატაცია",
+        ],
+      },
+      {
+        trainer: "სახელი გვარი",
+        courseName: "სამაშველო და უსაფრთხოების კურსი",
+        format: "პრაქტიკული სცენარები",
+        level: "ყველა დონე",
+        courseIncluded: [
+          "სამაშველო სისტემების აწყობა",
+          "დაშავებულის ევაკუაცია",
+          "საგანგებო სიტუაციებში მოქმედება",
+          "პირველადი დახმარება",
+        ],
+      },
+      {
+        trainer: "ტატა მერაბიშვილი",
+        courseName: "მყინვარულ და ყინულზე მოძრაობა",
+        format: "პრაქტიკა მყინვარზე",
+        level: "საშუალო",
+        courseIncluded: [
+          "კრემპონებისა და ცულის გამოყენება",
+          "მყინვარზე გადაადგილება",
+          "ნაპრალში ჩავარდნისგან გადარჩენა",
+          "ყინულზე დაცვა",
+        ],
+      },
+      {
+        trainer: "გუგა დაბრუნდაშვილი",
+        courseName: "კლდეზე მარშრუტის დაგეგმარება",
+        format: "თეორია + პრაქტიკა რეალურ კლდეზე",
+        level: "საშუალო / მოწინავე",
+        courseIncluded: [
+          "მარშრუტის სწორი ხაზის შერჩევა",
+          "კლდის სტრუქტურის ამოცნობა",
+          "თოკის ტიპები და გამოყენება",
+          "დაცვითი საშუალებების განთავსება",
+        ],
+      },
+      {
+        trainer: "ბიძინა გუჯაბიძე",
+        courseName: "ყინულზე ცოცვა (Ice Climbing)",
+        format: "პრაქტიკა გაყინულ ჩანჩქერზე / ყინულის მარშრუტზე",
+        level: "საშუალო / მოწინავე",
+        courseIncluded: [
+          "ყინულის იარაღების (ice tools) გამოყენება",
+          "ტექნიკური მოძრაობა ვერტიკალურ ყინულზე",
+          "უსაფრთხო დაშვება და დაზღვევა",
+        ],
+      },
+      {
+        trainer: "ალექსანდრე თელია",
+        courseName: "მაღალმთიანი ალპინიზმი",
+        format: "საველე ბანაკი",
+        level: "მოწინავე",
+        courseIncluded: [
+          "სიმაღლეზე ადაპტაცია",
+          "ბანაკის მოწყობა",
+          "ენერგიის მართვა",
+          "სამიტზე გასვლის სტრატეგია",
+        ],
+      },
+    ]),
   },
   problem: {
     womenPercent: "",
@@ -303,7 +421,8 @@ type FieldDef<T extends StepKey> = {
   key: keyof DataModel[T] & string;
   label: string;
   placeholder: string;
-  kind: "input" | "textarea";
+  kind: "input" | "textarea" | "chips" | "select" | "historyCards";
+  options?: string[];
   required?: boolean;
 };
 
@@ -312,7 +431,7 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
     {
       key: "officialName",
       label: "ოფიციალური დასახელება",
-      placeholder: "ქალთა ალპური სკოლა (ან თქვენი საბოლოო ოფიციალური სახელი)",
+      placeholder: "ქალთა ალპური სკოლა (იქნებ მოვიფიქროთ მოკლე ვერსიაც?)",
       kind: "input",
       required: true,
     },
@@ -320,21 +439,29 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
       key: "legalForm",
       label: "იურიდიული ფორმა",
       placeholder: "ა(ა)იპ / შპს / არაფორმალური ჯგუფი",
-      kind: "input",
+      kind: "select",
+      options: ["NGO", "LLC", "არაფორმალური ჯგუფი"],
       required: true,
     },
     {
       key: "founders",
       label: "დამფუძნებლები",
-      placeholder: "სახელები + როლები",
-      kind: "textarea",
+      placeholder: "დაამატეთ დამფუძნებელი (Enter)",
+      kind: "chips",
+      required: true,
+    },
+    {
+      key: "instructors",
+      label: "ინსტრუქტორები | გასვლის ხელმძღვანელები",
+      placeholder: "დაამატეთ ინსტრუქტორი (Enter)",
+      kind: "chips",
       required: true,
     },
     {
       key: "instructorCertifications",
       label: "ინსტრუქტორების სერტიფიკაციები",
-      placeholder: "სერტიფიკატები, ლიცენზიები, ასოცირებები",
-      kind: "textarea",
+      placeholder: "დაამატეთ სერტიფიკაცია (Enter)",
+      kind: "chips",
       required: true,
     },
     {
@@ -347,8 +474,8 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
     {
       key: "previousExpeditionsHistory",
       label: "წინა ექსპედიციების / ტრენინგების ისტორია",
-      placeholder: "ჩამოთვალეთ მნიშვნელოვანი ტრენინგები, გასვლები, შედეგები",
-      kind: "textarea",
+      placeholder: "ტრენერის სახელი",
+      kind: "historyCards",
       required: true,
     },
   ],
@@ -778,6 +905,279 @@ function pickBullets(data: DataModel) {
     .filter(Boolean) as string[];
 
   return bullets.slice(0, 5);
+}
+
+function parseChips(value: string) {
+  return value
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function parseHistoryCards(value: string): HistoryCard[] {
+  if (!value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((x) => {
+        const trainer = typeof x?.trainer === "string" ? x.trainer.trim() : "";
+        const courseName = typeof x?.courseName === "string" ? x.courseName.trim() : "";
+        const format = typeof x?.format === "string" && x.format.trim() ? x.format.trim() : "თეორია + პრაქტიკა";
+        const level = typeof x?.level === "string" && x.level.trim() ? x.level.trim() : "დამწყები";
+        const courseIncluded = Array.isArray(x?.courseIncluded)
+          ? x.courseIncluded.map((y: unknown) => String(y).trim()).filter(Boolean)
+          : [];
+        if (!trainer && !courseName && courseIncluded.length === 0) return null;
+        return { trainer, courseName, format, level, courseIncluded } as HistoryCard;
+      })
+      .filter(Boolean) as HistoryCard[];
+  } catch {
+    return [];
+  }
+}
+
+const historyFormatOptions = [
+  "თეორია + პრაქტიკა",
+  "თეორია + პრაქტიკა რეალურ კლდეზე",
+  "თეორია + საველე პრაქტიკა",
+  "პრაქტიკული სცენარები",
+  "პრაქტიკული ვორქშოპი",
+  "პრაქტიკა მყინვარზე",
+  "საველე ბანაკი",
+  "პრაქტიკა გაყინულ ჩანჩქერზე / ყინულის მარშრუტზე",
+  "თეორია + სავარჯიშო გეგმა",
+];
+
+const historyLevelOptions = ["დამწყები", "საშუალო", "მოწინავე", "საშუალო / მოწინავე", "ყველა დონე"];
+
+function ChipInputField(props: {
+  value: string;
+  placeholder: string;
+  missing?: boolean;
+  onChange: (next: string) => void;
+}) {
+  const { value, placeholder, missing, onChange } = props;
+  const [draft, setDraft] = React.useState("");
+  const chips = React.useMemo(() => parseChips(value), [value]);
+
+  function addChip(raw: string) {
+    const next = raw.trim();
+    if (!next) return;
+    if (chips.some((c) => c.toLowerCase() === next.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...chips, next].join(", "));
+    setDraft("");
+  }
+
+  function removeChip(idx: number) {
+    const next = chips.filter((_, i) => i !== idx);
+    onChange(next.join(", "));
+  }
+
+  return (
+    <div
+      className={cx(
+        "rounded-md border bg-slate-950/40 p-2",
+        "border-white/10 focus-within:border-cyan-400/70 focus-within:ring-2 focus-within:ring-cyan-400/30",
+        missing && "border-rose-400/40"
+      )}
+    >
+      <div className="mb-2 flex flex-wrap gap-2">
+        {chips.map((chip, idx) => (
+          <span
+            key={`${chip}-${idx}`}
+            className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-100"
+          >
+            {chip}
+            <button
+              type="button"
+              onClick={() => removeChip(idx)}
+              className="text-cyan-100/80 hover:text-white"
+              aria-label={`remove ${chip}`}
+            >
+              x
+            </button>
+          </span>
+        ))}
+      </div>
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            addChip(draft);
+          }
+        }}
+        onBlur={() => addChip(draft)}
+        placeholder={placeholder}
+        className="h-9 border-white/10 bg-slate-950/30 text-slate-200 placeholder:text-slate-500"
+      />
+    </div>
+  );
+}
+
+function HistoryCardsField(props: {
+  value: string;
+  missing?: boolean;
+  onChange: (next: string) => void;
+}) {
+  const { value, missing, onChange } = props;
+  const [trainer, setTrainer] = React.useState("");
+  const [courseName, setCourseName] = React.useState("");
+  const [courseIncludedDraft, setCourseIncludedDraft] = React.useState("");
+  const [format, setFormat] = React.useState<string>(historyFormatOptions[0]);
+  const [level, setLevel] = React.useState<string>(historyLevelOptions[0]);
+  const cards = React.useMemo(() => parseHistoryCards(value), [value]);
+
+  function saveCards(next: HistoryCard[]) {
+    onChange(JSON.stringify(next));
+  }
+
+  function addCard() {
+    const cleanedTrainer = trainer.trim();
+    const cleanedCourseName = courseName.trim();
+    const included = courseIncludedDraft
+      .split("\n")
+      .map((x) => x.replace(/^[-•\d.)\s]+/, "").trim())
+      .filter(Boolean);
+    if (!cleanedTrainer || !cleanedCourseName || included.length === 0) return;
+    saveCards([
+      ...cards,
+      {
+        trainer: cleanedTrainer,
+        courseName: cleanedCourseName,
+        format,
+        level,
+        courseIncluded: included,
+      },
+    ]);
+    setTrainer("");
+    setCourseName("");
+    setCourseIncludedDraft("");
+    setFormat(historyFormatOptions[0]);
+    setLevel(historyLevelOptions[0]);
+  }
+
+  function removeCard(idx: number) {
+    saveCards(cards.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div
+      className={cx(
+        "rounded-md border bg-slate-950/40 p-3",
+        "border-white/10 focus-within:border-cyan-400/70 focus-within:ring-2 focus-within:ring-cyan-400/30",
+        missing && "border-rose-400/40"
+      )}
+    >
+      <div className="mb-2 text-xs font-medium text-slate-300">არსებული ბარათები</div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {cards.map((card, idx) => (
+          <div
+            key={`${card.trainer}-${card.courseName}-${idx}`}
+            className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-cyan-400/35 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-cyan-950/55 p-4 shadow-[0_10px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]"
+          >
+            <div className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-full bg-cyan-400/15 blur-2xl" />
+            <div className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="mb-2 inline-flex items-center rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-2 py-0.5 text-[11px] font-medium text-fuchsia-100">
+                    ტრენინგი
+                  </div>
+                  <div className="text-sm font-semibold text-white">{card.courseName}</div>
+                  <div className="mt-1 inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-100">
+                    ტრენერი: {card.trainer}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeCard(idx)}
+                  className="rounded-md border border-rose-400/35 bg-rose-500/10 px-2 py-1 text-xs text-rose-100 hover:bg-rose-500/20"
+                >
+                  წაშლა
+                </button>
+              </div>
+            </div>
+            <div className="border-t border-white/10 py-3">
+              <ul className="space-y-1.5 text-xs text-slate-100">
+                {card.courseIncluded.map((item, itemIdx) => (
+                  <li key={itemIdx} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-cyan-300">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="border-t border-white/10 pt-3">
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full border border-violet-400/25 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-100">
+                  ფორმატი: {card.format}
+                </span>
+                <span className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-100">
+                  დონე: {card.level}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+        <div className="mb-3 text-xs font-medium text-slate-300">ახალი ბარათის დამატება</div>
+        <div className="grid gap-2">
+        <Input
+          value={trainer}
+          onChange={(e) => setTrainer(e.target.value)}
+          placeholder="ტრენერის სახელი"
+          className="bg-slate-950/30 border-white/10 text-slate-200 placeholder:text-slate-500"
+        />
+        <Input
+          value={courseName}
+          onChange={(e) => setCourseName(e.target.value)}
+          placeholder="კურსის სახელი"
+          className="bg-slate-950/30 border-white/10 text-slate-200 placeholder:text-slate-500"
+        />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <select
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30"
+          >
+            {historyFormatOptions.map((opt) => (
+              <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
+                ფორმატი: {opt}
+              </option>
+            ))}
+          </select>
+          <select
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30"
+          >
+            {historyLevelOptions.map((opt) => (
+              <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
+                დონე: {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+        <Textarea
+          value={courseIncludedDraft}
+          onChange={(e) => setCourseIncludedDraft(e.target.value)}
+          placeholder={"კურსში შედიოდა (თითო პუნქტი ახალ ხაზზე)\n• თოკთან მუშაობის საფუძვლები"}
+          className="min-h-[90px] bg-slate-950/30 border-white/10 text-slate-200 placeholder:text-slate-500"
+        />
+        <Button type="button" variant="secondary" onClick={addCard} className="h-9 w-fit">
+          ბარათის დამატება
+        </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function gradientButtonClass(extra?: string) {
@@ -1304,6 +1704,35 @@ export default function WomenAlpineSponsorKitBuilder() {
                               "bg-slate-950/40 border-white/10 text-slate-200 placeholder:text-slate-500",
                               missing && "border-rose-400/40"
                             )}
+                          />
+                        ) : f.kind === "select" ? (
+                          <select
+                            value={value}
+                            onChange={(e) => updateField(activeKey, f.key, e.target.value)}
+                            className={cx(
+                              "flex h-10 w-full rounded-md border bg-slate-950/40 px-3 py-1 text-sm text-slate-200",
+                              "border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
+                              missing && "border-rose-400/40"
+                            )}
+                          >
+                            {(f.options ?? []).map((opt) => (
+                              <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        ) : f.kind === "chips" ? (
+                          <ChipInputField
+                            value={value}
+                            placeholder={f.placeholder}
+                            missing={missing}
+                            onChange={(next) => updateField(activeKey, f.key, next)}
+                          />
+                        ) : f.kind === "historyCards" ? (
+                          <HistoryCardsField
+                            value={value}
+                            missing={missing}
+                            onChange={(next) => updateField(activeKey, f.key, next)}
                           />
                         ) : (
                           <Textarea
