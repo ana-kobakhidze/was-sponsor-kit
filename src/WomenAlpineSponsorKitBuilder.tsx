@@ -793,7 +793,7 @@ function gradientButtonClass(extra?: string) {
 
 function glassCardClass(extra?: string) {
   return cx(
-    "rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur",
+    "rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900/75 to-slate-950/65 backdrop-blur",
     "shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.55)]",
     extra
   );
@@ -986,10 +986,10 @@ export default function WomenAlpineSponsorKitBuilder() {
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-200">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/40 backdrop-blur pt-[env(safe-area-inset-top)]">
+      <div className="sticky top-0 z-30 border-b border-cyan-400/20 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-900/80 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20">
               <MountainSnow className="h-4 w-4 text-slate-200" />
             </div>
             <div>
@@ -1009,7 +1009,7 @@ export default function WomenAlpineSponsorKitBuilder() {
           <div className="flex items-center gap-2 lg:justify-end">
             <Badge
               className={cx(
-                "border border-white/10 bg-slate-950/60 text-slate-200",
+                "border border-cyan-400/25 bg-cyan-500/10 text-cyan-100",
                 overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
               )}
             >
@@ -1064,9 +1064,9 @@ export default function WomenAlpineSponsorKitBuilder() {
                         onClick={() => onPickStep(s.key)}
                         className={cx(
                           "w-full rounded-2xl px-3 py-3 text-left transition",
-                          "border border-transparent hover:border-white/10 hover:bg-white/5",
+                          "border border-transparent hover:border-cyan-400/25 hover:bg-cyan-500/5",
                           "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
-                          isActive && "border-white/10 bg-white/5"
+                          isActive && "border-cyan-400/35 bg-cyan-500/10 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
                         )}
                       >
                         <div className="flex items-start gap-3">
@@ -1089,13 +1089,16 @@ export default function WomenAlpineSponsorKitBuilder() {
                             </div>
                             <div className="mt-0.5 truncate text-xs text-slate-400">{s.subtitle}</div>
                             <div className="mt-2 flex items-center gap-2">
-                              <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                                {pct}%
-                              </Badge>
-                              <div className="h-1.5 flex-1 rounded-full bg-white/10">
-                                <div className="h-1.5 rounded-full bg-white/40" style={{ width: `${pct}%` }} />
-                              </div>
+                            <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
+                              {pct}%
+                            </Badge>
+                            <div className="h-1.5 flex-1 rounded-full bg-white/10">
+                              <div
+                                className="h-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-400 to-cyan-400"
+                                style={{ width: `${pct}%` }}
+                              />
                             </div>
+                          </div>
                           </div>
                         </div>
                       </button>
@@ -1138,9 +1141,9 @@ export default function WomenAlpineSponsorKitBuilder() {
                       onClick={() => onPickStep(s.key)}
                       className={cx(
                         "w-full rounded-2xl px-3 py-3 text-left transition",
-                        "border border-transparent hover:border-white/10 hover:bg-white/5",
+                        "border border-transparent hover:border-cyan-400/25 hover:bg-cyan-500/5",
                         "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
-                        isActive && "border-white/10 bg-white/5"
+                        isActive && "border-cyan-400/35 bg-cyan-500/10 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
                       )}
                     >
                       <div className="flex items-start gap-3">
@@ -1163,12 +1166,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                           </div>
                           <div className="mt-0.5 truncate text-xs text-slate-400">{s.subtitle}</div>
                           <div className="mt-2 flex items-center gap-2">
-                            <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                            <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
                               {pct}%
                             </Badge>
                             <div className="h-1.5 flex-1 rounded-full bg-white/10">
                               <div
-                                className="h-1.5 rounded-full bg-white/40"
+                                className="h-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-400 to-cyan-400"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -1246,10 +1249,10 @@ export default function WomenAlpineSponsorKitBuilder() {
               <div className="flex flex-col gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                    <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
                       ეტაპი {activeIndex + 1} / {steps.length}
                     </Badge>
-                    <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                    <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
                       {stepPct}% შევსებული
                     </Badge>
                     {submitted[activeKey] && (
@@ -1434,7 +1437,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     1-გვერდიანი პიჩის დრაფტი (ავტომატურად შეჯამებული შევსებული მონაცემებიდან)
                   </div>
                 </div>
-                <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
                   ცოცხალი
                 </Badge>
               </div>
@@ -1487,7 +1490,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <div className="text-sm font-semibold text-white">შემოთავაზებული სპონსორები</div>
                   <div className="mt-1 text-xs text-slate-400">დროებითი სია</div>
                 </div>
-                <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
                   დრაფტი
                 </Badge>
               </div>
@@ -1507,7 +1510,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-3 py-2"
                   >
                     <div className="text-sm text-slate-300">{s}</div>
-                    <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                    <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
                       დრაფტი
                     </Badge>
                   </div>
