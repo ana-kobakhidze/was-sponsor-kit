@@ -985,7 +985,7 @@ export default function WomenAlpineSponsorKitBuilder() {
     <div className="min-h-screen bg-[#070A12] text-slate-200">
       {/* Top bar */}
       <div className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/40 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-4">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60">
               <MountainSnow className="h-4 w-4 text-slate-200" />
@@ -996,7 +996,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             </div>
           </div>
 
-          <div className="ml-auto flex w-[520px] flex-col gap-2">
+          <div className="w-full flex-1 lg:ml-auto lg:max-w-[520px]">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-400">საერთო შევსების დონე</span>
               <span className="font-medium text-white">{overall}%</span>
@@ -1004,7 +1004,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             <Progress value={overall} />
           </div>
 
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="flex items-center gap-2 lg:justify-end">
             <Badge
               className={cx(
                 "border border-white/10 bg-slate-950/60 text-slate-200",
@@ -1018,9 +1018,9 @@ export default function WomenAlpineSponsorKitBuilder() {
       </div>
 
       {/* Main layout */}
-      <div className="mx-auto grid max-w-[1600px] grid-cols-[320px_1fr_420px] gap-6 px-6 py-6">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 xl:grid-cols-[300px_minmax(0,1fr)_380px] 2xl:grid-cols-[320px_minmax(0,1fr)_420px]">
         {/* Left sidebar */}
-        <Card className={glassCardClass("h-[calc(100vh-112px)]")}>
+        <Card className={glassCardClass("xl:h-[calc(100vh-112px)]")}>
           <div className="flex h-full flex-col">
             <div className="p-4">
               <div className="relative">
@@ -1035,7 +1035,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             </div>
             <Separator className="bg-white/10" />
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="max-h-[45vh] flex-1 xl:max-h-none">
               <div className="p-2">
                 {filteredSteps.map((s) => {
                   const pct = stepCompleteness(data, s.key);
@@ -1092,7 +1092,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             <Separator className="bg-white/10" />
 
             <div className="p-4">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Button
                   variant="secondary"
                   onClick={goPrev}
@@ -1117,12 +1117,12 @@ export default function WomenAlpineSponsorKitBuilder() {
         </Card>
 
         {/* Center editor */}
-        <Card className={glassCardClass("h-[calc(100vh-112px)]")}>
+        <Card className={glassCardClass("xl:h-[calc(100vh-112px)]")}>
           <div className="flex h-full flex-col">
             <div className="p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
                       ეტაპი {activeIndex + 1} / {steps.length}
                     </Badge>
@@ -1139,18 +1139,18 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <p className="mt-1 text-sm text-slate-400">{activeStep.instruction}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Button
                     variant="secondary"
                     onClick={resetDraft}
-                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                    className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     დრაფტის გასუფთავება
                   </Button>
                   <Button
                     onClick={() => alert("დროებითი: აქ დაემატება სპონსორისთვის პიჩის გენერატორი.")}
-                    className={gradientButtonClass("h-10")}
+                    className={gradientButtonClass("h-10 w-full sm:w-auto")}
                   >
                     <Wand2 className="mr-2 h-4 w-4" />
                     სპონსორის პიჩის ტექსტის გენერირება
@@ -1163,7 +1163,7 @@ export default function WomenAlpineSponsorKitBuilder() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="max-h-[65vh] flex-1 xl:max-h-none">
               <div className="space-y-5 px-6 pb-6">
                 {(fieldsByStep[activeKey] as Array<FieldDef<StepKey>>).map((f) => {
                   const value = (data[activeKey] as any)[f.key] as string;
@@ -1214,7 +1214,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <Separator className="bg-white/10" />
 
                 {/* Validation + Submit */}
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
                     {submitState.status === "idle" ? (
                       <div className="text-sm text-slate-400">
@@ -1249,11 +1249,11 @@ export default function WomenAlpineSponsorKitBuilder() {
                     )}
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                     <Button
                       variant="secondary"
                       onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი პიჩის ტექსტის ბლოკი.")}
-                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                      className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       პიჩის ტექსტის წინასწარი ნახვა
@@ -1262,7 +1262,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     <Button
                       onClick={submitCurrentStep}
                       disabled={submitState.status === "saving"}
-                      className={gradientButtonClass("h-10")}
+                      className={gradientButtonClass("h-10 w-full sm:w-auto")}
                     >
                       {submitState.status === "saving" ? (
                         <>
@@ -1280,7 +1280,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-white">შენახვის შენიშვნა</div>
                       <div className="mt-1 text-xs text-slate-400">
@@ -1391,7 +1391,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             </div>
           </Card>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
               variant="secondary"
               onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი PDF.")}
@@ -1425,8 +1425,8 @@ export default function WomenAlpineSponsorKitBuilder() {
       </div>
 
       {/* Footer */}
-      <div className="mx-auto max-w-[1600px] px-6 pb-8">
-        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-xs text-slate-400">
+      <div className="mx-auto max-w-[1600px] px-4 pb-8 sm:px-6">
+        <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="text-slate-300">თემა:</span> მუქი გლასი • ფონი #070A12 • ბარათები slate-950/60
           </div>
