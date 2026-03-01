@@ -816,6 +816,12 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [data, setData] = React.useState<DataModel>(emptyData);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
+  const [draftId] = React.useState<string>(() => {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    return `draft_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  });
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>({
@@ -914,13 +920,20 @@ export default function WomenAlpineSponsorKitBuilder() {
     setSubmitState({ status: "saving", message: "Saving…" });
 
     const payload = {
-      submittedAt: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
+      draftId,
       stepKey: activeKey,
+      stepData: data[activeKey],
+      fullData: data,
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+
+      // Compatibility fields for older backend readers.
+      submittedAt: new Date().toISOString(),
       stepTitle: activeStep.title,
       stepCompleteness: stepCompleteness(data, activeKey),
       overallCompleteness: overallCompleteness(data),
       data: data[activeKey],
-      fullDraft: data, // save everything each time (latest snapshot)
+      fullDraft: data,
     };
 
     try {
