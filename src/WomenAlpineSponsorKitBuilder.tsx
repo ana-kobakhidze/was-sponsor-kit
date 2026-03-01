@@ -20,11 +20,10 @@ import {
   Handshake,
   Scale,
   Sparkles,
+  Menu,
   ChevronLeft,
   ChevronRight,
   Search,
-  RotateCcw,
-  Wand2,
   FileDown,
   FileText,
   CheckCircle2,
@@ -890,25 +889,6 @@ export default function WomenAlpineSponsorKitBuilder() {
     }));
   }
 
-  function resetDraft() {
-    setData(emptyData);
-    setSubmitted({
-      coreIdentity: false,
-      problem: false,
-      audience: false,
-      program: false,
-      budget: false,
-      impact: false,
-      visibility: false,
-      partnerships: false,
-      legalRisk: false,
-      vision: false,
-    });
-    setSubmitState({ status: "idle", message: "" });
-    setActiveIndex(0);
-    setQuery("");
-  }
-
   async function submitCurrentStep() {
     const check = validateStep(data, activeKey);
     if (!check.ok) {
@@ -987,34 +967,48 @@ export default function WomenAlpineSponsorKitBuilder() {
     <div className="min-h-screen bg-[#070A12] text-slate-200">
       {/* Top bar */}
       <div className="sticky top-0 z-30 border-b border-cyan-400/20 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-900/80 backdrop-blur pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-3 lg:hidden">
             <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20">
               <MountainSnow className="h-4 w-4 text-slate-200" />
             </div>
-            <div>
-              <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა – სპონსორების ქითის კონსტრუქტორი</div>
-              <div className="text-xs text-slate-400">სპონსორებთან გასვლამდე მიაღწიეთ 80%+ შევსებას.</div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Progress value={overall} className="h-2 flex-1" />
+                <span className="text-sm font-semibold text-white">{overall}%</span>
+              </div>
             </div>
           </div>
 
-          <div className="w-full flex-1 lg:ml-auto lg:max-w-[520px]">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">საერთო შევსების დონე</span>
-              <span className="font-medium text-white">{overall}%</span>
+          <div className="hidden lg:flex lg:items-center lg:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20">
+                <MountainSnow className="h-4 w-4 text-slate-200" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა – სპონსორების ქითის კონსტრუქტორი</div>
+                <div className="text-xs text-slate-300">სპონსორებთან გასვლამდე მიაღწიეთ 80%+ შევსებას.</div>
+              </div>
             </div>
-            <Progress value={overall} />
-          </div>
 
-          <div className="flex items-center gap-2 lg:justify-end">
-            <Badge
-              className={cx(
-                "border border-cyan-400/25 bg-cyan-500/10 text-cyan-100",
-                overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
-              )}
-            >
-              {overall >= 80 ? "სპონსორისთვის მზად" : "დრაფტი"}
-            </Badge>
+            <div className="w-full flex-1 lg:ml-auto lg:max-w-[520px]">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">საერთო შევსების დონე</span>
+                <span className="font-medium text-white">{overall}%</span>
+              </div>
+              <Progress value={overall} />
+            </div>
+
+            <div className="flex items-center gap-2 lg:justify-end">
+              <Badge
+                className={cx(
+                  "border border-cyan-400/25 bg-cyan-500/10 text-cyan-100",
+                  overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
+                )}
+              >
+                {overall >= 80 ? "სპონსორისთვის მზად" : "დრაფტი"}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -1087,7 +1081,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                                 </Badge>
                               ) : null}
                             </div>
-                            <div className="mt-0.5 truncate text-xs text-slate-400">{s.subtitle}</div>
+                            <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
                             <div className="mt-2 flex items-center gap-2">
                             <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
                               {pct}%
@@ -1164,7 +1158,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                               </Badge>
                             )}
                           </div>
-                          <div className="mt-0.5 truncate text-xs text-slate-400">{s.subtitle}</div>
+                          <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
                           <div className="mt-2 flex items-center gap-2">
                             <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
                               {pct}%
@@ -1215,74 +1209,62 @@ export default function WomenAlpineSponsorKitBuilder() {
         <Card className={glassCardClass("xl:h-[calc(100vh-112px)]")}>
           <div className="flex h-full flex-col">
             <div className="p-6">
-              <div className="mb-4 rounded-2xl border border-white/10 bg-slate-950/40 p-3 xl:hidden">
-                <div className="mb-2 text-xs font-medium text-slate-400">ნავიგაცია</div>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mb-4 xl:hidden">
+                <div className="flex items-center">
                   <Button
                     variant="secondary"
                     onClick={() => setMobileNavOpen(true)}
-                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                    className="h-10 w-10 border border-white/10 bg-slate-950/60 p-0 text-slate-200 hover:bg-white/5"
+                    aria-label="სექციების მენიუ"
                   >
-                    სექციების მენიუ
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={goPrev}
-                    disabled={activeIndex === 0}
-                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-                  >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    უკან
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={goNext}
-                    disabled={activeIndex === steps.length - 1}
-                    className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-                  >
-                    შემდეგი
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <Menu className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
               <div className="flex flex-col gap-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
-                      ეტაპი {activeIndex + 1} / {steps.length}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
+                    ეტაპი {activeIndex + 1} / {steps.length}
+                  </Badge>
+                  <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
+                    {stepPct}% შევსებული
+                  </Badge>
+                  {submitted[activeKey] && (
+                    <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
+                      გაგზავნილი
                     </Badge>
-                    <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
-                      {stepPct}% შევსებული
-                    </Badge>
-                    {submitted[activeKey] && (
-                      <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
-                        გაგზავნილი
-                      </Badge>
-                    )}
-                  </div>
-                  <h1 className="mt-3 max-w-4xl text-xl font-semibold leading-tight text-white xl:text-2xl">
-                    {activeStep.title}
-                  </h1>
-                  <p className="mt-2 max-w-3xl text-sm text-slate-400">{activeStep.instruction}</p>
+                  )}
                 </div>
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:justify-end">
-                  <Button
-                    variant="secondary"
-                    onClick={resetDraft}
-                    className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    დრაფტის გასუფთავება
-                  </Button>
-                  <Button
-                    onClick={() => alert("დროებითი: აქ დაემატება სპონსორისთვის პიჩის გენერატორი.")}
-                    className={gradientButtonClass("h-10 w-full sm:w-auto")}
-                  >
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    სპონსორის პიჩის ტექსტის გენერირება
-                  </Button>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h1 className="max-w-4xl text-xl font-semibold leading-tight text-white xl:text-2xl">
+                      {activeStep.title}
+                    </h1>
+                    <p className="mt-2 max-w-3xl text-sm text-slate-300">{activeStep.subtitle}</p>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={goPrev}
+                      disabled={activeIndex === 0}
+                      className="h-10 border border-white/10 bg-slate-950/60 px-3 text-slate-200 hover:bg-white/5 sm:px-4"
+                    >
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      <span className="hidden sm:inline">უკან</span>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={goNext}
+                      disabled={activeIndex === steps.length - 1}
+                      className="h-10 border border-white/10 bg-slate-950/60 px-3 text-slate-200 hover:bg-white/5 sm:px-4"
+                    >
+                      <span className="hidden sm:inline">შემდეგი</span>
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
