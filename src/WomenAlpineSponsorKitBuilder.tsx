@@ -800,11 +800,7 @@ function glassCardClass(extra?: string) {
 }
 
 async function postSubmission(payload: any) {
-  const endpoint = (import.meta as any).env?.VITE_SHEETS_ENDPOINT as string | undefined;
-  if (!endpoint || endpoint.trim().length === 0) {
-    return { ok: false, skipped: true as const, message: "No endpoint configured." };
-  }
-  const res = await fetch(endpoint, {
+  const res = await fetch("/api/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -929,16 +925,6 @@ export default function WomenAlpineSponsorKitBuilder() {
 
     try {
       const res = await postSubmission(payload);
-      if (res.skipped) {
-        // Endpoint not configured - treat as local submit success so UI flow works.
-        setSubmitted((p) => ({ ...p, [activeKey]: true }));
-        setSubmitState({
-          status: "success",
-          message:
-            "Saved locally (no endpoint set). Add VITE_SHEETS_ENDPOINT to actually store submissions.",
-        });
-        return;
-      }
       if (!res.ok) {
         setSubmitState({ status: "error", message: res.message || "Save failed." });
         return;
@@ -1434,7 +1420,7 @@ export default function WomenAlpineSponsorKitBuilder() {
           <div className="flex items-center gap-2">
             <span className="text-slate-300">Endpoint:</span>{" "}
             <span className="text-slate-200">
-              {(import.meta as any).env?.VITE_SHEETS_ENDPOINT ? "Configured" : "Not set"}
+              /api/submit
             </span>
           </div>
         </div>
