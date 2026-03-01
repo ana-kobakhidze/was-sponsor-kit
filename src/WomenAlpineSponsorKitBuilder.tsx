@@ -816,6 +816,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [data, setData] = React.useState<DataModel>(emptyData);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
+  const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [draftId] = React.useState<string>(() => {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
       return crypto.randomUUID();
@@ -875,6 +876,7 @@ export default function WomenAlpineSponsorKitBuilder() {
     if (idx >= 0) {
       setActiveIndex(idx);
       setSubmitState({ status: "idle", message: "" });
+      setMobileNavOpen(false);
     }
   }
 
@@ -1017,10 +1019,98 @@ export default function WomenAlpineSponsorKitBuilder() {
         </div>
       </div>
 
+      {mobileNavOpen ? (
+        <div className="fixed inset-0 z-40 xl:hidden">
+          <button
+            aria-label="მენიუს დახურვა"
+            onClick={() => setMobileNavOpen(false)}
+            className="absolute inset-0 bg-black/70"
+          />
+          <Card className={glassCardClass("absolute inset-y-0 left-0 w-[90%] max-w-sm rounded-none border-y-0 border-l-0")}>
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between gap-2 p-4">
+                <div className="text-sm font-semibold text-white">სექციების ნავიგაცია</div>
+                <Button
+                  variant="secondary"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="h-9 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                >
+                  დახურვა
+                </Button>
+              </div>
+
+              <div className="px-4 pb-4">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="სექციების ძიება…"
+                    className="pl-9 bg-slate-950/40 border-white/10 text-slate-200 placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
+              <Separator className="bg-white/10" />
+
+              <ScrollArea className="flex-1">
+                <div className="p-2">
+                  {filteredSteps.map((s) => {
+                    const pct = stepCompleteness(data, s.key);
+                    const isActive = s.key === activeKey;
+                    const done = submitted[s.key];
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => onPickStep(s.key)}
+                        className={cx(
+                          "w-full rounded-2xl px-3 py-3 text-left transition",
+                          "border border-transparent hover:border-white/10 hover:bg-white/5",
+                          isActive && "border-white/10 bg-white/5"
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={cx(
+                              "mt-0.5 grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-slate-950/60",
+                              isActive && "bg-slate-950/80"
+                            )}
+                          >
+                            {stepIconMap[s.key]}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <div className="truncate text-sm font-semibold text-white">{s.title}</div>
+                              {done ? (
+                                <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
+                                  გაგზავნილი
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <div className="mt-0.5 truncate text-xs text-slate-400">{s.subtitle}</div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
+                                {pct}%
+                              </Badge>
+                              <div className="h-1.5 flex-1 rounded-full bg-white/10">
+                                <div className="h-1.5 rounded-full bg-white/40" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
       {/* Main layout */}
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 xl:grid-cols-[300px_minmax(0,1fr)_380px] 2xl:grid-cols-[320px_minmax(0,1fr)_420px]">
         {/* Left sidebar */}
-        <Card className={glassCardClass("xl:h-[calc(100vh-112px)]")}>
+        <Card className={glassCardClass("hidden xl:block xl:h-[calc(100vh-112px)]")}>
           <div className="flex h-full flex-col">
             <div className="p-4">
               <div className="relative">
@@ -1122,6 +1212,33 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 xl:hidden">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setMobileNavOpen(true)}
+                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                    >
+                      სექციების მენიუ
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={goPrev}
+                      disabled={activeIndex === 0}
+                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                    >
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      უკან
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={goNext}
+                      disabled={activeIndex === steps.length - 1}
+                      className="h-10 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
+                    >
+                      შემდეგი
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
                       ეტაპი {activeIndex + 1} / {steps.length}
@@ -1299,7 +1416,7 @@ export default function WomenAlpineSponsorKitBuilder() {
         </Card>
 
         {/* Right preview */}
-        <div className="space-y-6">
+        <div className="hidden space-y-6 xl:block">
           <Card className={glassCardClass()}>
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
