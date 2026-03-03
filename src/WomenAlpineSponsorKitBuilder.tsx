@@ -1108,16 +1108,6 @@ function mergeDataModel(partial: Partial<DataModel>): DataModel {
   return merged as DataModel;
 }
 
-function getInitialDataModel(): DataModel {
-  try {
-    const raw = localStorage.getItem(LOCAL_BASELINE_KEY);
-    if (!raw) return emptyData;
-    return mergeDataModel(JSON.parse(raw));
-  } catch {
-    return emptyData;
-  }
-}
-
 function ChipInputField(props: {
   value: string;
   placeholder: string;
@@ -1461,7 +1451,7 @@ async function postSubmission(payload: any) {
 }
 
 export default function WomenAlpineSponsorKitBuilder() {
-  const [data, setData] = React.useState<DataModel>(getInitialDataModel);
+  const [data, setData] = React.useState<DataModel>(emptyData);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
@@ -1530,21 +1520,53 @@ export default function WomenAlpineSponsorKitBuilder() {
 
   React.useEffect(() => {
     try {
+      let baselineData: DataModel | null = null;
+      let baselineTs = 0;
+      const rawBaseline = localStorage.getItem(LOCAL_BASELINE_KEY);
+      if (rawBaseline) {
+        const parsedBaseline = JSON.parse(rawBaseline) as
+          | { data?: Partial<DataModel>; updatedAt?: string }
+          | Partial<DataModel>;
+        const baselinePartial =
+          (parsedBaseline as { data?: Partial<DataModel> })?.data ?? (parsedBaseline as Partial<DataModel>);
+        baselineData = mergeDataModel(baselinePartial ?? {});
+        const baselineUpdatedAt = (parsedBaseline as { updatedAt?: string })?.updatedAt;
+        baselineTs = baselineUpdatedAt ? Date.parse(baselineUpdatedAt) || 0 : 0;
+      }
+
       const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
-      if (!raw) return;
+      if (!raw) {
+        if (baselineData) {
+          setData(baselineData);
+          setLocalSaveMessage("Loaded saved baseline.");
+        }
+        return;
+      }
+
       const parsed = JSON.parse(raw) as {
         data?: Partial<DataModel>;
         submitted?: Partial<Record<StepKey, boolean>>;
         activeIndex?: number;
         query?: string;
+        updatedAt?: string;
       };
-      if (parsed.data) setData(mergeDataModel(parsed.data));
-      if (parsed.submitted) setSubmitted({ ...INITIAL_SUBMITTED_STATE, ...parsed.submitted });
-      if (typeof parsed.activeIndex === "number") {
-        setActiveIndex(clamp(parsed.activeIndex, 0, steps.length - 1));
+      const draftData = parsed.data ? mergeDataModel(parsed.data) : null;
+      const draftTs = parsed.updatedAt ? Date.parse(parsed.updatedAt) || 0 : 0;
+
+      const useDraft = !!draftData && draftTs >= baselineTs;
+
+      if (useDraft && draftData) {
+        setData(draftData);
+        if (parsed.submitted) setSubmitted({ ...INITIAL_SUBMITTED_STATE, ...parsed.submitted });
+        if (typeof parsed.activeIndex === "number") {
+          setActiveIndex(clamp(parsed.activeIndex, 0, steps.length - 1));
+        }
+        if (typeof parsed.query === "string") setQuery(parsed.query);
+        setLocalSaveMessage("Loaded saved draft.");
+      } else if (baselineData) {
+        setData(baselineData);
+        setLocalSaveMessage("Loaded saved baseline.");
       }
-      if (typeof parsed.query === "string") setQuery(parsed.query);
-      setLocalSaveMessage("Loaded saved draft.");
     } catch {
       // ignore invalid local draft payload
     }
@@ -1610,7 +1632,13 @@ export default function WomenAlpineSponsorKitBuilder() {
       const nextSubmitted = { ...submitted, [activeKey]: true };
       setSubmitted(nextSubmitted);
       setSubmitState({ status: "success", message: "შენახულია ✅" });
-      localStorage.setItem(LOCAL_BASELINE_KEY, JSON.stringify(data));
+      localStorage.setItem(
+        LOCAL_BASELINE_KEY,
+        JSON.stringify({
+          data,
+          updatedAt: new Date().toISOString(),
+        })
+      );
       saveDraftLocal({ submitted: nextSubmitted, message: "Submitted and saved locally." });
     } catch (e: any) {
       setSubmitState({
