@@ -77,6 +77,7 @@ type UploadedImage = {
 };
 
 const LOCAL_DRAFT_KEY = "was_sponsor_kit_draft_v1";
+const LOCAL_BASELINE_KEY = "was_sponsor_kit_baseline_v1";
 
 type DataModel = {
   coreIdentity: {
@@ -1107,6 +1108,16 @@ function mergeDataModel(partial: Partial<DataModel>): DataModel {
   return merged as DataModel;
 }
 
+function getInitialDataModel(): DataModel {
+  try {
+    const raw = localStorage.getItem(LOCAL_BASELINE_KEY);
+    if (!raw) return emptyData;
+    return mergeDataModel(JSON.parse(raw));
+  } catch {
+    return emptyData;
+  }
+}
+
 function ChipInputField(props: {
   value: string;
   placeholder: string;
@@ -1450,7 +1461,7 @@ async function postSubmission(payload: any) {
 }
 
 export default function WomenAlpineSponsorKitBuilder() {
-  const [data, setData] = React.useState<DataModel>(emptyData);
+  const [data, setData] = React.useState<DataModel>(getInitialDataModel);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
@@ -1539,17 +1550,23 @@ export default function WomenAlpineSponsorKitBuilder() {
     }
   }, []);
 
-  function saveDraftLocal() {
+  function saveDraftLocal(overrides?: {
+    data?: DataModel;
+    submitted?: Record<StepKey, boolean>;
+    activeIndex?: number;
+    query?: string;
+    message?: string;
+  }) {
     try {
       const payload = {
-        data,
-        submitted,
-        activeIndex,
-        query,
+        data: overrides?.data ?? data,
+        submitted: overrides?.submitted ?? submitted,
+        activeIndex: overrides?.activeIndex ?? activeIndex,
+        query: overrides?.query ?? query,
         updatedAt: new Date().toISOString(),
       };
       localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
-      setLocalSaveMessage("Saved locally.");
+      setLocalSaveMessage(overrides?.message ?? "Saved locally.");
     } catch {
       setLocalSaveMessage("Local save failed.");
     }
@@ -1590,8 +1607,11 @@ export default function WomenAlpineSponsorKitBuilder() {
         setSubmitState({ status: "error", message: res.message || "შენახვა ვერ მოხერხდა." });
         return;
       }
-      setSubmitted((p) => ({ ...p, [activeKey]: true }));
+      const nextSubmitted = { ...submitted, [activeKey]: true };
+      setSubmitted(nextSubmitted);
       setSubmitState({ status: "success", message: "შენახულია ✅" });
+      localStorage.setItem(LOCAL_BASELINE_KEY, JSON.stringify(data));
+      saveDraftLocal({ submitted: nextSubmitted, message: "Submitted and saved locally." });
     } catch (e: any) {
       setSubmitState({
         status: "error",
@@ -2067,7 +2087,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={saveDraftLocal}
+                      onClick={() => saveDraftLocal()}
                       className="h-10 w-full border border-[#3FA7A3]/30 bg-[#3FA7A3]/10 text-[#CDEDEC] hover:bg-[#3FA7A3]/20 sm:w-auto"
                     >
                       შენახვა (local)
