@@ -4,7 +4,7 @@
    - Completeness per step + overall
    - Right-side live preview summary
    - Per-step validation + Submit (POST to VITE_SHEETS_ENDPOINT if provided)
-   - No localStorage
+   - Optional local draft save/load via localStorage
 */
 
 import * as React from "react";
@@ -18,6 +18,7 @@ import {
   Ruler,
   Image as ImageIcon,
   Handshake,
+  Palette,
   Scale,
   Sparkles,
   Menu,
@@ -39,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import waLogo from "@/assets/wa.png";
 
 type StepKey =
   | "coreIdentity"
@@ -48,6 +50,7 @@ type StepKey =
   | "budget"
   | "impact"
   | "visibility"
+  | "branding"
   | "partnerships"
   | "legalRisk"
   | "vision";
@@ -67,6 +70,13 @@ type HistoryCard = {
   format: string;
   level: string;
 };
+
+type UploadedImage = {
+  name: string;
+  dataUrl: string;
+};
+
+const LOCAL_DRAFT_KEY = "was_sponsor_kit_draft_v1";
 
 type DataModel = {
   coreIdentity: {
@@ -122,6 +132,19 @@ type DataModel = {
     pressContacts: string;
     sponsorBenefitsList: string;
     contentPlan: string;
+  };
+  branding: {
+    brandEssence: string;
+    targetFeeling: string;
+    brandPersonality: string;
+    primaryColors: string;
+    secondaryColors: string;
+    logoFiles: string;
+    typography: string;
+    logoUsageRules: string;
+    visualStyle: string;
+    voiceTone: string;
+    mandatoryAssets: string;
   };
   partnerships: {
     localGuides: string;
@@ -310,6 +333,19 @@ const emptyData: DataModel = {
     sponsorBenefitsList: "",
     contentPlan: "",
   },
+  branding: {
+    brandEssence: "",
+    targetFeeling: "",
+    brandPersonality: "გაბედული, სანდო, პროფესიონალური",
+    primaryColors: "#0B132B, #3A86FF, #00B4D8",
+    secondaryColors: "#F72585, #22C55E",
+    logoFiles: "",
+    typography: "",
+    logoUsageRules: "",
+    visualStyle: "",
+    voiceTone: "",
+    mandatoryAssets: "ლოგო SVG, ლოგო PNG, სოციალური მედიის შაბლონი, პრეზენტაციის ყდა",
+  },
   partnerships: {
     localGuides: "",
     rescueServices: "",
@@ -392,6 +428,14 @@ const steps: StepDef[] = [
     icon: <ImageIcon className="h-4 w-4" />,
   },
   {
+    key: "branding",
+    title: "ბრენდინგი",
+    subtitle: "ბრენდის გზამკვლევი.",
+    instruction:
+      "დააფიქსირეთ ბრენდის სტილი: ფერები, ტონი, ვიზუალური წესები და სავალდებულო ბრენდ მასალები.",
+    icon: <Palette className="h-4 w-4" />,
+  },
+  {
     key: "partnerships",
     title: "პარტნიორობები",
     subtitle: "ვინ გიჭერთ მხარს.",
@@ -421,7 +465,7 @@ type FieldDef<T extends StepKey> = {
   key: keyof DataModel[T] & string;
   label: string;
   placeholder: string;
-  kind: "input" | "textarea" | "chips" | "select" | "historyCards";
+  kind: "input" | "textarea" | "chips" | "select" | "historyCards" | "images";
   options?: string[];
   required?: boolean;
 };
@@ -715,6 +759,85 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
       required: true,
     },
   ],
+  branding: [
+    {
+      key: "brandEssence",
+      label: "ბრენდის არსი",
+      placeholder: "ერთი მოკლე ფრაზა: ვინ ხართ და რატომ არსებობთ",
+      kind: "input",
+      required: true,
+    },
+    {
+      key: "targetFeeling",
+      label: "რა გრძნობა უნდა დატოვოს ბრენდმა",
+      placeholder: "მაგ.: თავდაჯერებულობა, უსაფრთხოება, თავგადასავალი",
+      kind: "input",
+      required: true,
+    },
+    {
+      key: "brandPersonality",
+      label: "ბრენდის ხასიათი",
+      placeholder: "დაამატეთ ხასიათის სიტყვა (Enter)",
+      kind: "chips",
+      required: true,
+    },
+    {
+      key: "primaryColors",
+      label: "ძირითადი ფერები",
+      placeholder: "დაამატეთ ფერი (hex ან სახელი)",
+      kind: "chips",
+      required: true,
+    },
+    {
+      key: "secondaryColors",
+      label: "დამხმარე ფერები",
+      placeholder: "დაამატეთ დამატებითი ფერი",
+      kind: "chips",
+      required: true,
+    },
+    {
+      key: "logoFiles",
+      label: "ლოგოების ატვირთვა (PNG/SVG/JPG)",
+      placeholder: "ატვირთეთ ლოგოები",
+      kind: "images",
+      required: true,
+    },
+    {
+      key: "typography",
+      label: "ტიპოგრაფია",
+      placeholder: "ძირითადი/დამხმარე ფონტები და გამოყენების წესები",
+      kind: "textarea",
+      required: true,
+    },
+    {
+      key: "logoUsageRules",
+      label: "ლოგოს გამოყენების წესები",
+      placeholder: "მინ. ზომა, დაცვითი არე, აკრძალული გამოყენება",
+      kind: "textarea",
+      required: true,
+    },
+    {
+      key: "visualStyle",
+      label: "ვიზუალური სტილი",
+      placeholder: "ფოტო სტილი, გრაფიკული ელემენტები, კომპოზიციის პრინციპები",
+      kind: "textarea",
+      required: true,
+    },
+    {
+      key: "voiceTone",
+      label: "კომუნიკაციის ტონი",
+      placeholder: "როგორ ვწერთ/ვლაპარაკობთ (ფორმალური, მეგობრული, ენერგიული და ა.შ.)",
+      kind: "textarea",
+      required: true,
+    },
+    {
+      key: "mandatoryAssets",
+      label: "სავალდებულო ბრენდ მასალები",
+      placeholder: "დაამატეთ სავალდებულო asset (Enter)",
+      kind: "chips",
+      required: true,
+    },
+  ],
   partnerships: [
     {
       key: "localGuides",
@@ -930,6 +1053,24 @@ function parseHistoryCards(value: string): HistoryCard[] {
   }
 }
 
+function parseUploadedImages(value: string): UploadedImage[] {
+  if (!value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((x) => {
+        const name = typeof x?.name === "string" ? x.name : "";
+        const dataUrl = typeof x?.dataUrl === "string" ? x.dataUrl : "";
+        if (!name || !dataUrl) return null;
+        return { name, dataUrl } as UploadedImage;
+      })
+      .filter(Boolean) as UploadedImage[];
+  } catch {
+    return [];
+  }
+}
+
 const historyFormatOptions = [
   "თეორია + პრაქტიკა",
   "თეორია + პრაქტიკა რეალურ კლდეზე",
@@ -943,6 +1084,28 @@ const historyFormatOptions = [
 ];
 
 const historyLevelOptions = ["დამწყები", "საშუალო", "მოწინავე", "საშუალო / მოწინავე", "ყველა დონე"];
+
+const INITIAL_SUBMITTED_STATE: Record<StepKey, boolean> = {
+  coreIdentity: false,
+  problem: false,
+  audience: false,
+  program: false,
+  budget: false,
+  impact: false,
+  visibility: false,
+  branding: false,
+  partnerships: false,
+  legalRisk: false,
+  vision: false,
+};
+
+function mergeDataModel(partial: Partial<DataModel>): DataModel {
+  const merged = { ...emptyData } as any;
+  (Object.keys(emptyData) as StepKey[]).forEach((k) => {
+    merged[k] = { ...(emptyData as any)[k], ...((partial as any)?.[k] ?? {}) };
+  });
+  return merged as DataModel;
+}
 
 function ChipInputField(props: {
   value: string;
@@ -974,7 +1137,7 @@ function ChipInputField(props: {
     <div
       className={cx(
         "rounded-md border bg-slate-950/40 p-2",
-        "border-white/10 focus-within:border-cyan-400/70 focus-within:ring-2 focus-within:ring-cyan-400/30",
+        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
         missing && "border-rose-400/40"
       )}
     >
@@ -982,13 +1145,13 @@ function ChipInputField(props: {
         {chips.map((chip, idx) => (
           <span
             key={`${chip}-${idx}`}
-            className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-100"
+            className="inline-flex items-center gap-1 rounded-full border border-[#3FA7A3]/30 bg-[#3FA7A3]/10 px-2.5 py-1 text-xs text-[#CDEDEC]"
           >
             {chip}
             <button
               type="button"
               onClick={() => removeChip(idx)}
-              className="text-cyan-100/80 hover:text-white"
+              className="text-[#CDEDEC]/80 hover:text-white"
               aria-label={`remove ${chip}`}
             >
               x
@@ -1063,7 +1226,7 @@ function HistoryCardsField(props: {
     <div
       className={cx(
         "rounded-md border bg-slate-950/40 p-3",
-        "border-white/10 focus-within:border-cyan-400/70 focus-within:ring-2 focus-within:ring-cyan-400/30",
+        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
         missing && "border-rose-400/40"
       )}
     >
@@ -1072,17 +1235,17 @@ function HistoryCardsField(props: {
         {cards.map((card, idx) => (
           <div
             key={`${card.trainer}-${card.courseName}-${idx}`}
-            className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-cyan-400/35 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-cyan-950/55 p-4 shadow-[0_10px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[#3FA7A3]/35 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-[#1A4C57]/55 p-4 shadow-[0_10px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]"
           >
-            <div className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-full bg-cyan-400/15 blur-2xl" />
+            <div className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-full bg-[#3FA7A3]/15 blur-2xl" />
             <div className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="mb-2 inline-flex items-center rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-2 py-0.5 text-[11px] font-medium text-fuchsia-100">
+                  <div className="mb-2 inline-flex items-center rounded-full border border-[#E07A83]/25 bg-[#E07A83]/10 px-2 py-0.5 text-[11px] font-medium text-[#F6D0D4]">
                     ტრენინგი
                   </div>
                   <div className="text-sm font-semibold text-white">{card.courseName}</div>
-                  <div className="mt-1 inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-100">
+                  <div className="mt-1 inline-flex items-center rounded-full border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 px-2 py-0.5 text-xs text-[#CDEDEC]">
                     ტრენერი: {card.trainer}
                   </div>
                 </div>
@@ -1099,7 +1262,7 @@ function HistoryCardsField(props: {
               <ul className="space-y-1.5 text-xs text-slate-100">
                 {card.courseIncluded.map((item, itemIdx) => (
                   <li key={itemIdx} className="flex items-start gap-2">
-                    <span className="mt-0.5 text-cyan-300">•</span>
+                    <span className="mt-0.5 text-[#84CFCB]">•</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -1107,7 +1270,7 @@ function HistoryCardsField(props: {
             </div>
             <div className="border-t border-white/10 pt-3">
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full border border-violet-400/25 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-100">
+                <span className="inline-flex items-center rounded-full border border-[#1E3A63]/25 bg-[#1E3A63]/10 px-2 py-0.5 text-[11px] text-[#BFD0EA]">
                   ფორმატი: {card.format}
                 </span>
                 <span className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-100">
@@ -1138,7 +1301,7 @@ function HistoryCardsField(props: {
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value)}
-            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30"
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30"
           >
             {historyFormatOptions.map((opt) => (
               <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
@@ -1149,7 +1312,7 @@ function HistoryCardsField(props: {
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30"
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30"
           >
             {historyLevelOptions.map((opt) => (
               <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
@@ -1173,10 +1336,92 @@ function HistoryCardsField(props: {
   );
 }
 
+function ImageUploadField(props: {
+  value: string;
+  missing?: boolean;
+  onChange: (next: string) => void;
+}) {
+  const { value, missing, onChange } = props;
+  const images = React.useMemo(() => parseUploadedImages(value), [value]);
+
+  function save(next: UploadedImage[]) {
+    onChange(JSON.stringify(next));
+  }
+
+  function removeAt(idx: number) {
+    save(images.filter((_, i) => i !== idx));
+  }
+
+  async function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const next = [...images];
+
+    for (const file of files) {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("file read failed"));
+        reader.readAsDataURL(file);
+      }).catch(() => "");
+      if (!dataUrl) continue;
+      next.push({ name: file.name, dataUrl });
+    }
+
+    save(next);
+    e.target.value = "";
+  }
+
+  return (
+    <div
+      className={cx(
+        "rounded-md border bg-slate-950/40 p-3",
+        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
+        missing && "border-rose-400/40"
+      )}
+    >
+      <div className="mb-3">
+        <input
+          type="file"
+          accept="image/*,.svg"
+          multiple
+          onChange={onPickFiles}
+          className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-md file:border file:border-[#3FA7A3]/35 file:bg-[#3FA7A3]/10 file:px-3 file:py-1.5 file:text-[#CDEDEC] hover:file:bg-[#3FA7A3]/20"
+        />
+      </div>
+      {images.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {images.map((img, idx) => (
+            <div key={`${img.name}-${idx}`} className="rounded-xl border border-white/10 bg-slate-900/60 p-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="truncate text-xs text-slate-300">{img.name}</div>
+                <button
+                  type="button"
+                  onClick={() => removeAt(idx)}
+                  className="rounded-md border border-rose-400/35 bg-rose-500/10 px-2 py-1 text-[11px] text-rose-100 hover:bg-rose-500/20"
+                >
+                  remove
+                </button>
+              </div>
+              <img
+                src={img.dataUrl}
+                alt={img.name}
+                className="mt-2 h-28 w-full rounded-md border border-white/10 bg-white/90 object-contain p-1"
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-xs text-slate-500">Upload one or more logo images to preview here.</div>
+      )}
+    </div>
+  );
+}
+
 function gradientButtonClass(extra?: string) {
   return cx(
     "relative overflow-hidden border border-white/10 text-white",
-    "bg-gradient-to-r from-fuchsia-500 to-cyan-500",
+    "bg-gradient-to-r from-[#E07A83] to-[#3FA7A3]",
     "hover:brightness-110 active:brightness-95",
     "shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_12px_30px_rgba(0,0,0,0.35)]",
     extra
@@ -1209,6 +1454,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
+  const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
   const [draftId] = React.useState<string>(() => {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
       return crypto.randomUUID();
@@ -1217,18 +1463,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   });
 
   // Per-step save status (for UI feedback)
-  const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>({
-    coreIdentity: false,
-    problem: false,
-    audience: false,
-    program: false,
-    budget: false,
-    impact: false,
-    visibility: false,
-    partnerships: false,
-    legalRisk: false,
-    vision: false,
-  });
+  const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
 
   const [submitState, setSubmitState] = React.useState<{
     status: "idle" | "saving" | "success" | "error";
@@ -1280,6 +1515,44 @@ export default function WomenAlpineSponsorKitBuilder() {
         [fieldKey]: value,
       },
     }));
+  }
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        data?: Partial<DataModel>;
+        submitted?: Partial<Record<StepKey, boolean>>;
+        activeIndex?: number;
+        query?: string;
+      };
+      if (parsed.data) setData(mergeDataModel(parsed.data));
+      if (parsed.submitted) setSubmitted({ ...INITIAL_SUBMITTED_STATE, ...parsed.submitted });
+      if (typeof parsed.activeIndex === "number") {
+        setActiveIndex(clamp(parsed.activeIndex, 0, steps.length - 1));
+      }
+      if (typeof parsed.query === "string") setQuery(parsed.query);
+      setLocalSaveMessage("Loaded saved draft.");
+    } catch {
+      // ignore invalid local draft payload
+    }
+  }, []);
+
+  function saveDraftLocal() {
+    try {
+      const payload = {
+        data,
+        submitted,
+        activeIndex,
+        query,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
+      setLocalSaveMessage("Saved locally.");
+    } catch {
+      setLocalSaveMessage("Local save failed.");
+    }
   }
 
   async function submitCurrentStep() {
@@ -1343,6 +1616,16 @@ export default function WomenAlpineSponsorKitBuilder() {
     };
   }, [data]);
 
+  const headerLogoDataUrl = React.useMemo(() => {
+    const first = parseUploadedImages(data.branding.logoFiles)[0];
+    return first?.dataUrl ?? null;
+  }, [data.branding.logoFiles]);
+  const headerLogoSrc = headerLogoDataUrl ?? waLogo;
+  const [headerLogoFailed, setHeaderLogoFailed] = React.useState(false);
+  React.useEffect(() => {
+    setHeaderLogoFailed(false);
+  }, [headerLogoSrc]);
+
   const stepIconMap: Record<StepKey, React.ReactNode> = {
     coreIdentity: <MountainSnow className="h-4 w-4" />,
     problem: <Target className="h-4 w-4" />,
@@ -1351,6 +1634,7 @@ export default function WomenAlpineSponsorKitBuilder() {
     budget: <Wallet className="h-4 w-4" />,
     impact: <Ruler className="h-4 w-4" />,
     visibility: <ImageIcon className="h-4 w-4" />,
+    branding: <Palette className="h-4 w-4" />,
     partnerships: <Handshake className="h-4 w-4" />,
     legalRisk: <ShieldAlert className="h-4 w-4" />,
     vision: <Sparkles className="h-4 w-4" />,
@@ -1359,11 +1643,20 @@ export default function WomenAlpineSponsorKitBuilder() {
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-200">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-cyan-400/20 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-900/80 backdrop-blur pt-[env(safe-area-inset-top)]">
+      <div className="sticky top-0 z-30 border-b border-[#3FA7A3]/20 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-900/80 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20">
-              <MountainSnow className="h-4 w-4 text-slate-200" />
+            <div className="flex items-center">
+              {!headerLogoFailed ? (
+                <img
+                  src={headerLogoSrc}
+                  alt="Logo"
+                  className="h-12 w-auto max-w-[170px] object-contain"
+                  onError={() => setHeaderLogoFailed(true)}
+                />
+              ) : (
+                <MountainSnow className="h-4 w-4 text-slate-200" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
@@ -1375,12 +1668,21 @@ export default function WomenAlpineSponsorKitBuilder() {
 
           <div className="hidden lg:flex lg:items-center lg:gap-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20">
-                <MountainSnow className="h-4 w-4 text-slate-200" />
+              <div className="flex items-center">
+                {!headerLogoFailed ? (
+                  <img
+                    src={headerLogoSrc}
+                    alt="Logo"
+                    className="h-14 w-auto max-w-[190px] object-contain"
+                    onError={() => setHeaderLogoFailed(true)}
+                  />
+                ) : (
+                  <MountainSnow className="h-4 w-4 text-slate-200" />
+                )}
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა – სპონსორების ქითის კონსტრუქტორი</div>
-                <div className="text-xs text-slate-300">სპონსორებთან გასვლამდე მიაღწიეთ 80%+ შევსებას.</div>
+                <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა</div>
+                <div className="text-xs text-slate-300">სპონსორებთან გასვლამდე უნდა მივაღწიოთ 80%+</div>
               </div>
             </div>
 
@@ -1395,7 +1697,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="flex items-center gap-2 lg:justify-end">
               <Badge
                 className={cx(
-                  "border border-cyan-400/25 bg-cyan-500/10 text-cyan-100",
+                  "border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]",
                   overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
                 )}
               >
@@ -1451,16 +1753,16 @@ export default function WomenAlpineSponsorKitBuilder() {
                         onClick={() => onPickStep(s.key)}
                         className={cx(
                           "w-full rounded-2xl px-3 py-3 text-left transition",
-                          "border border-transparent hover:border-cyan-400/25 hover:bg-cyan-500/5",
-                          "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
-                          isActive && "border-cyan-400/35 bg-cyan-500/10 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
+                          "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
+                          "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
+                          isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
                         )}
                       >
                         <div className="flex items-start gap-3">
                           <div
                             className={cx(
-                              "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-                              isActive && "border-cyan-300/45 from-cyan-500/20 to-violet-500/20 text-cyan-50"
+                              "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+                              isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
                             )}
                           >
                             {stepIconMap[s.key]}
@@ -1476,12 +1778,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                             </div>
                             <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
                             <div className="mt-2 flex items-center gap-2">
-                            <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
+                            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
                               {pct}%
                             </Badge>
                             <div className="h-1.5 flex-1 rounded-full bg-white/10">
                               <div
-                                className="h-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-400 to-cyan-400"
+                                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -1528,16 +1830,16 @@ export default function WomenAlpineSponsorKitBuilder() {
                       onClick={() => onPickStep(s.key)}
                       className={cx(
                         "w-full rounded-2xl px-3 py-3 text-left transition",
-                        "border border-transparent hover:border-cyan-400/25 hover:bg-cyan-500/5",
-                        "focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
-                        isActive && "border-cyan-400/35 bg-cyan-500/10 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
+                        "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
+                        "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
+                        isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
                       )}
                     >
                       <div className="flex items-start gap-3">
                         <div
                           className={cx(
-                            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-                            isActive && "border-cyan-300/45 from-cyan-500/20 to-violet-500/20 text-cyan-50"
+                            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+                            isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
                           )}
                         >
                           {stepIconMap[s.key]}
@@ -1553,12 +1855,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                           </div>
                           <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
                           <div className="mt-2 flex items-center gap-2">
-                            <Badge className="border border-violet-400/25 bg-violet-500/10 text-violet-100">
+                            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
                               {pct}%
                             </Badge>
                             <div className="h-1.5 flex-1 rounded-full bg-white/10">
                               <div
-                                className="h-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-400 to-cyan-400"
+                                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -1617,10 +1919,10 @@ export default function WomenAlpineSponsorKitBuilder() {
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
+                  <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
                     ეტაპი {activeIndex + 1} / {steps.length}
                   </Badge>
-                  <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
+                  <Badge className="border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]">
                     {stepPct}% შევსებული
                   </Badge>
                   {submitted[activeKey] && (
@@ -1678,7 +1980,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-white">
                           {f.label}
-                          {f.required ? <span className="ml-1 text-fuchsia-300">*</span> : null}
+                          {f.required ? <span className="ml-1 text-[#ECA8B0]">*</span> : null}
                         </label>
                         {missing ? (
                           <Badge className="border border-rose-400/20 bg-rose-500/10 text-rose-200">
@@ -1704,7 +2006,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                             onChange={(e) => updateField(activeKey, f.key, e.target.value)}
                             className={cx(
                               "flex h-10 w-full rounded-md border bg-slate-950/40 px-3 py-1 text-sm text-slate-200",
-                              "border-white/10 focus-visible:outline-none focus-visible:border-cyan-400/70 focus-visible:ring-2 focus-visible:ring-cyan-400/30",
+                              "border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
                               missing && "border-rose-400/40"
                             )}
                           >
@@ -1723,6 +2025,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                           />
                         ) : f.kind === "historyCards" ? (
                           <HistoryCardsField
+                            value={value}
+                            missing={missing}
+                            onChange={(next) => updateField(activeKey, f.key, next)}
+                          />
+                        ) : f.kind === "images" ? (
+                          <ImageUploadField
                             value={value}
                             missing={missing}
                             onChange={(next) => updateField(activeKey, f.key, next)}
@@ -1746,8 +2054,44 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <Separator className="bg-white/10" />
 
                 {/* Validation + Submit */}
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                    <Button
+                      variant="secondary"
+                      onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი პიჩის ტექსტის ბლოკი.")}
+                      className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      პიჩის ტექსტის წინასწარი ნახვა
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={saveDraftLocal}
+                      className="h-10 w-full border border-[#3FA7A3]/30 bg-[#3FA7A3]/10 text-[#CDEDEC] hover:bg-[#3FA7A3]/20 sm:w-auto"
+                    >
+                      შენახვა (local)
+                    </Button>
+                    <Button
+                      onClick={submitCurrentStep}
+                      disabled={submitState.status === "saving"}
+                      className={gradientButtonClass("h-10 w-full sm:w-auto")}
+                    >
+                      {submitState.status === "saving" ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          იგზავნება…
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          ამ ეტაპის გაგზავნა
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="min-w-0">
                     {submitState.status === "idle" ? (
                       <div className="text-sm text-slate-400">
                         გაგზავნეთ ეს ეტაპი შესანახად (სრული დრაფტის სნეპშოტთან ერთად).
@@ -1779,35 +2123,9 @@ export default function WomenAlpineSponsorKitBuilder() {
                         ყველა სავალდებულო ველი შევსებულია.
                       </div>
                     )}
-                  </div>
-
-                  <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    <Button
-                      variant="secondary"
-                      onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი პიჩის ტექსტის ბლოკი.")}
-                      className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      პიჩის ტექსტის წინასწარი ნახვა
-                    </Button>
-
-                    <Button
-                      onClick={submitCurrentStep}
-                      disabled={submitState.status === "saving"}
-                      className={gradientButtonClass("h-10 w-full sm:w-auto")}
-                    >
-                      {submitState.status === "saving" ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          იგზავნება…
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          ამ ეტაპის გაგზავნა
-                        </>
-                      )}
-                    </Button>
+                    {localSaveMessage ? (
+                      <div className="mt-2 text-xs text-[#84CFCB]">{localSaveMessage}</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1821,7 +2139,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       </div>
                     </div>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      localStorage არ გამოიყენება
+                      localStorage enabled
                     </Badge>
                   </div>
                 </div>
@@ -1841,7 +2159,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     1-გვერდიანი პიჩის დრაფტი (ავტომატურად შეჯამებული შევსებული მონაცემებიდან)
                   </div>
                 </div>
-                <Badge className="border border-cyan-400/25 bg-cyan-500/10 text-cyan-100">
+                <Badge className="border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]">
                   ცოცხალი
                 </Badge>
               </div>
@@ -1894,7 +2212,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <div className="text-sm font-semibold text-white">შემოთავაზებული სპონსორები</div>
                   <div className="mt-1 text-xs text-slate-400">დროებითი სია</div>
                 </div>
-                <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
+                <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
                   დრაფტი
                 </Badge>
               </div>
@@ -1914,7 +2232,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-3 py-2"
                   >
                     <div className="text-sm text-slate-300">{s}</div>
-                    <Badge className="border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-100">
+                    <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
                       დრაფტი
                     </Badge>
                   </div>
