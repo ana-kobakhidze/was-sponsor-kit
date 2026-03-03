@@ -266,7 +266,7 @@ const emptyData: DataModel = {
     ]),
   },
   problem: {
-    womenPercent: "",
+    womenPercent: "აღჭურვილობა, გიდები, სივრცე",
     barriers: "",
     safetyGaps: "",
     mediaVisibilityGap: "",
@@ -465,13 +465,6 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
       required: true,
     },
     {
-      key: "yearsOperating",
-      label: "მოქმედების წლები",
-      placeholder: "მაგ.: 1, 2, 5+ (ან „ამ სეზონიდან ვიწყებთ“)",
-      kind: "input",
-      required: true,
-    },
-    {
       key: "previousExpeditionsHistory",
       label: "წინა ექსპედიციების / ტრენინგების ისტორია",
       placeholder: "ტრენერის სახელი",
@@ -482,9 +475,9 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
   problem: [
     {
       key: "womenPercent",
-      label: "ალპინიზმში ქალების %",
-      placeholder: "თუ ზუსტად არ იცით: მიახლოებითი მონაცემი + წყარო",
-      kind: "input",
+      label: "არ გვაქვს და გვჭირდება",
+      placeholder: "დაამატეთ ჩიპი (Enter)",
+      kind: "chips",
       required: true,
     },
     {
@@ -496,7 +489,7 @@ const fieldsByStep: { [K in StepKey]: FieldDef<K>[] } = {
     },
     {
       key: "safetyGaps",
-      label: "უსაფრთხოების ხარვეზები",
+      label: "რატო არ გვაქვს",
       placeholder: "ტრენინგის ხარვეზები, რისკ-ფაქტორები, უნარებსა და მენტორობაზე წვდომა",
       kind: "textarea",
       required: true,
