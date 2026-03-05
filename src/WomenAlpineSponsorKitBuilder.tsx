@@ -77,7 +77,8 @@ type UploadedImage = {
 };
 
 const LOCAL_DRAFT_KEY = "was_sponsor_kit_draft_v1";
-const LOCAL_BASELINE_KEY = "was_sponsor_kit_baseline_v1";
+const DEFAULT_REMOTE_DRAFT_ID = "women-alpine-shared-draft";
+const DRAFT_ID_QUERY_PARAM = "draftId";
 
 type DataModel = {
   coreIdentity: {
@@ -1450,18 +1451,90 @@ async function postSubmission(payload: any) {
   return { ok: true as const, skipped: false as const, message: text || "შენახულია." };
 }
 
+function resolveDraftId(): string {
+  if (typeof window === "undefined") return DEFAULT_REMOTE_DRAFT_ID;
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get(DRAFT_ID_QUERY_PARAM)?.trim();
+    if (fromUrl) return fromUrl;
+  } catch {
+    // ignore invalid URL parsing
+  }
+  return DEFAULT_REMOTE_DRAFT_ID;
+}
+
+type DraftStatePayload = {
+  data?: Partial<DataModel>;
+  submitted?: Partial<Record<StepKey, boolean>>;
+  activeIndex?: number;
+  query?: string;
+  updatedAt?: string;
+};
+
+type DraftSnapshot = {
+  data: DataModel;
+  submitted: Record<StepKey, boolean>;
+  activeIndex: number;
+  query: string;
+  updatedAt: string;
+};
+
+function toDraftSnapshot(payload: DraftStatePayload | null): DraftSnapshot {
+  return {
+    data: mergeDataModel(payload?.data ?? {}),
+    submitted: { ...INITIAL_SUBMITTED_STATE, ...(payload?.submitted ?? {}) },
+    activeIndex: clamp(payload?.activeIndex ?? 0, 0, steps.length - 1),
+    query: payload?.query ?? "",
+    updatedAt: payload?.updatedAt ?? new Date().toISOString(),
+  };
+}
+
+async function fetchDraftState(draftId: string) {
+  const res = await fetch(`/api/draft?draftId=${encodeURIComponent(draftId)}`, { method: "GET" });
+  const json = await res.json().catch(() => null);
+  if (!res.ok) {
+    return { ok: false as const, message: (json as any)?.message || `HTTP ${res.status}` };
+  }
+  return {
+    ok: true as const,
+    found: Boolean((json as any)?.found),
+    payload: ((json as any)?.draft ?? null) as DraftStatePayload | null,
+  };
+}
+
+async function patchDraftStepState(args: {
+  draftId: string;
+  stepKey: StepKey;
+  stepData: Record<string, string>;
+  activeIndex: number;
+  query: string;
+}) {
+  const res = await fetch("/api/draft", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      draftId: args.draftId,
+      stepKey: args.stepKey,
+      stepData: args.stepData,
+      activeIndex: args.activeIndex,
+      query: args.query,
+      updatedAt: new Date().toISOString(),
+    }),
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok) {
+    return { ok: false as const, message: (json as any)?.message || `HTTP ${res.status}` };
+  }
+  return { ok: true as const, payload: ((json as any)?.draft ?? null) as DraftStatePayload | null };
+}
+
 export default function WomenAlpineSponsorKitBuilder() {
-  const [data, setData] = React.useState<DataModel>(emptyData);
+  const [data, setData] = React.useState<DataModel>(emptyData); // draftLocal
+  const [draftSaved, setDraftSaved] = React.useState<DraftSnapshot | null>(null);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
-  const [draftId] = React.useState<string>(() => {
-    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-      return crypto.randomUUID();
-    }
-    return `draft_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-  });
+  const [draftId] = React.useState<string>(() => resolveDraftId());
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
@@ -1470,6 +1543,7 @@ export default function WomenAlpineSponsorKitBuilder() {
     status: "idle" | "saving" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
+  const [savingByStep, setSavingByStep] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
 
   const activeStep = steps[activeIndex];
   const activeKey = activeStep.key;
@@ -1488,20 +1562,45 @@ export default function WomenAlpineSponsorKitBuilder() {
   const overall = overallCompleteness(data);
   const stepPct = stepCompleteness(data, activeKey);
   const validation = validateStep(data, activeKey);
+  const activeStepSaving = savingByStep[activeKey];
+
+  const dirtyByStep = React.useMemo(() => {
+    const base = draftSaved?.data;
+    const map = { ...INITIAL_SUBMITTED_STATE };
+    (Object.keys(INITIAL_SUBMITTED_STATE) as StepKey[]).forEach((key) => {
+      if (!base) {
+        map[key] = false;
+        return;
+      }
+      const left = data[key] as Record<string, string>;
+      const right = base[key] as Record<string, string>;
+      const fields = fieldsByStep[key] as Array<FieldDef<StepKey>>;
+      map[key] = fields.some((f) => (left[f.key] ?? "") !== (right[f.key] ?? ""));
+    });
+    return map;
+  }, [data, draftSaved]);
+
+  function shouldLeaveCurrentStep() {
+    if (!dirtyByStep[activeKey]) return true;
+    return window.confirm("You have unsaved changes on this step. Leave without submitting?");
+  }
 
   const goPrev = React.useCallback(() => {
+    if (!shouldLeaveCurrentStep()) return;
     setActiveIndex((i) => clamp(i - 1, 0, steps.length - 1));
     setSubmitState({ status: "idle", message: "" });
-  }, []);
+  }, [activeKey, dirtyByStep]);
 
   const goNext = React.useCallback(() => {
+    if (!shouldLeaveCurrentStep()) return;
     setActiveIndex((i) => clamp(i + 1, 0, steps.length - 1));
     setSubmitState({ status: "idle", message: "" });
-  }, []);
+  }, [activeKey, dirtyByStep]);
 
   function onPickStep(key: StepKey) {
     const idx = steps.findIndex((s) => s.key === key);
     if (idx >= 0) {
+      if (!shouldLeaveCurrentStep()) return;
       setActiveIndex(idx);
       setSubmitState({ status: "idle", message: "" });
       setMobileNavOpen(false);
@@ -1519,58 +1618,51 @@ export default function WomenAlpineSponsorKitBuilder() {
   }
 
   React.useEffect(() => {
-    try {
-      let baselineData: DataModel | null = null;
-      let baselineTs = 0;
-      const rawBaseline = localStorage.getItem(LOCAL_BASELINE_KEY);
-      if (rawBaseline) {
-        const parsedBaseline = JSON.parse(rawBaseline) as
-          | { data?: Partial<DataModel>; updatedAt?: string }
-          | Partial<DataModel>;
-        const baselinePartial =
-          (parsedBaseline as { data?: Partial<DataModel> })?.data ?? (parsedBaseline as Partial<DataModel>);
-        baselineData = mergeDataModel(baselinePartial ?? {});
-        const baselineUpdatedAt = (parsedBaseline as { updatedAt?: string })?.updatedAt;
-        baselineTs = baselineUpdatedAt ? Date.parse(baselineUpdatedAt) || 0 : 0;
-      }
+    let cancelled = false;
 
-      const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
-      if (!raw) {
-        if (baselineData) {
-          setData(baselineData);
-          setLocalSaveMessage("Loaded saved baseline.");
+    async function loadInitialState() {
+      try {
+        const remote = await fetchDraftState(draftId);
+        if (!cancelled && remote.ok && remote.found && remote.payload) {
+          const snapshot = toDraftSnapshot(remote.payload);
+          setData(snapshot.data);
+          setSubmitted(snapshot.submitted);
+          setActiveIndex(snapshot.activeIndex);
+          setQuery(snapshot.query);
+          setDraftSaved(snapshot);
+          setLocalSaveMessage("Loaded draft from database.");
+          return;
         }
-        return;
-      }
-
-      const parsed = JSON.parse(raw) as {
-        data?: Partial<DataModel>;
-        submitted?: Partial<Record<StepKey, boolean>>;
-        activeIndex?: number;
-        query?: string;
-        updatedAt?: string;
-      };
-      const draftData = parsed.data ? mergeDataModel(parsed.data) : null;
-      const draftTs = parsed.updatedAt ? Date.parse(parsed.updatedAt) || 0 : 0;
-
-      const useDraft = !!draftData && draftTs >= baselineTs;
-
-      if (useDraft && draftData) {
-        setData(draftData);
-        if (parsed.submitted) setSubmitted({ ...INITIAL_SUBMITTED_STATE, ...parsed.submitted });
-        if (typeof parsed.activeIndex === "number") {
-          setActiveIndex(clamp(parsed.activeIndex, 0, steps.length - 1));
+        if (!cancelled && remote.ok && !remote.found) {
+          const snapshot = toDraftSnapshot({
+            data: emptyData,
+            submitted: INITIAL_SUBMITTED_STATE,
+            activeIndex: 0,
+            query: "",
+          });
+          setData(snapshot.data);
+          setSubmitted(snapshot.submitted);
+          setActiveIndex(snapshot.activeIndex);
+          setQuery(snapshot.query);
+          setDraftSaved(snapshot);
+          setLocalSaveMessage("No saved draft in database. Started with initial values.");
+          return;
         }
-        if (typeof parsed.query === "string") setQuery(parsed.query);
-        setLocalSaveMessage("Loaded saved draft.");
-      } else if (baselineData) {
-        setData(baselineData);
-        setLocalSaveMessage("Loaded saved baseline.");
+      } catch {
+        if (!cancelled) {
+          setData(mergeDataModel(emptyData));
+          setSubmitted({ ...INITIAL_SUBMITTED_STATE });
+          setDraftSaved(toDraftSnapshot({ data: emptyData, submitted: INITIAL_SUBMITTED_STATE, activeIndex: 0, query: "" }));
+          setLocalSaveMessage("Failed to load draft from database.");
+        }
       }
-    } catch {
-      // ignore invalid local draft payload
     }
-  }, []);
+
+    void loadInitialState();
+    return () => {
+      cancelled = true;
+    };
+  }, [draftId]);
 
   function saveDraftLocal(overrides?: {
     data?: DataModel;
@@ -1595,6 +1687,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   }
 
   async function submitCurrentStep() {
+    if (savingByStep[activeKey]) return;
     const check = validateStep(data, activeKey);
     if (!check.ok) {
       setSubmitState({
@@ -1604,6 +1697,7 @@ export default function WomenAlpineSponsorKitBuilder() {
       return;
     }
 
+    setSavingByStep((prev) => ({ ...prev, [activeKey]: true }));
     setSubmitState({ status: "saving", message: "ინახება…" });
 
     const payload = {
@@ -1627,24 +1721,37 @@ export default function WomenAlpineSponsorKitBuilder() {
       const res = await postSubmission(payload);
       if (!res.ok) {
         setSubmitState({ status: "error", message: res.message || "შენახვა ვერ მოხერხდა." });
+        setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
         return;
       }
-      const nextSubmitted = { ...submitted, [activeKey]: true };
-      setSubmitted(nextSubmitted);
-      setSubmitState({ status: "success", message: "შენახულია ✅" });
-      localStorage.setItem(
-        LOCAL_BASELINE_KEY,
-        JSON.stringify({
-          data,
-          updatedAt: new Date().toISOString(),
-        })
-      );
-      saveDraftLocal({ submitted: nextSubmitted, message: "Submitted and saved locally." });
+      const remoteSave = await patchDraftStepState({
+        draftId,
+        stepKey: activeKey,
+        stepData: { ...(data[activeKey] as Record<string, string>) },
+        activeIndex,
+        query,
+      });
+      if (!remoteSave.ok) {
+        setSubmitState({ status: "error", message: `Database save failed: ${remoteSave.message}` });
+        setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
+        return;
+      }
+      const snapshot = toDraftSnapshot(remoteSave.payload);
+      setDraftSaved(snapshot);
+      setData(snapshot.data);
+      setSubmitted(snapshot.submitted);
+      setActiveIndex(snapshot.activeIndex);
+      setQuery(snapshot.query);
+      setSubmitState({ status: "success", message: "Saved to database ✅" });
+      setLocalSaveMessage("Step submitted and merged into database draft.");
+      saveDraftLocal({ data: snapshot.data, submitted: snapshot.submitted, message: "Saved locally." });
+      setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
     } catch (e: any) {
       setSubmitState({
         status: "error",
         message: e?.message ? String(e.message) : "შენახვა ვერ მოხერხდა.",
       });
+      setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
     }
   }
 
@@ -1978,6 +2085,9 @@ export default function WomenAlpineSponsorKitBuilder() {
                       გაგზავნილი
                     </Badge>
                   )}
+                  {dirtyByStep[activeKey] && (
+                    <Badge className="border border-amber-400/20 bg-amber-500/10 text-amber-200">Unsaved changes</Badge>
+                  )}
                 </div>
 
                 <div className="flex items-start justify-between gap-3">
@@ -2122,10 +2232,10 @@ export default function WomenAlpineSponsorKitBuilder() {
                     </Button>
                     <Button
                       onClick={submitCurrentStep}
-                      disabled={submitState.status === "saving"}
+                      disabled={activeStepSaving}
                       className={gradientButtonClass("h-10 w-full sm:w-auto")}
                     >
-                      {submitState.status === "saving" ? (
+                      {activeStepSaving ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           იგზავნება…
@@ -2144,7 +2254,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       <div className="text-sm text-slate-400">
                         გაგზავნეთ ეს ეტაპი შესანახად (სრული დრაფტის სნეპშოტთან ერთად).
                       </div>
-                    ) : submitState.status === "saving" ? (
+                    ) : activeStepSaving ? (
                       <div className="flex items-center gap-2 text-sm text-slate-300">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         {submitState.message}
@@ -2182,12 +2292,13 @@ export default function WomenAlpineSponsorKitBuilder() {
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-white">შენახვის შენიშვნა</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        ფორმა აგზავნის მონაცემებს <span className="text-slate-200">/api/submit</span>-ზე, ხოლო სერვერი მათ
-                        გადაამისამართებს <span className="text-slate-200">SHEETS_ENDPOINT</span>-ზე (Google Apps Script).
+                        In-memory edits stay local until submit. Submit sends step payload to{" "}
+                        <span className="text-slate-200">/api/submit</span> and merges saved step state in{" "}
+                        <span className="text-slate-200">/api/draft</span>.
                       </div>
                     </div>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      localStorage enabled
+                      DB on submit
                     </Badge>
                   </div>
                 </div>
