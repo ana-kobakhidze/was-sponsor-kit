@@ -29,7 +29,6 @@ import {
   FileText,
   CheckCircle2,
   AlertTriangle,
-  Loader2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -77,8 +76,6 @@ type UploadedImage = {
 };
 
 const LOCAL_DRAFT_KEY = "was_sponsor_kit_draft_v1";
-const DEFAULT_REMOTE_DRAFT_ID = "women-alpine-shared-draft";
-const DRAFT_ID_QUERY_PARAM = "draftId";
 
 type DataModel = {
   coreIdentity: {
@@ -462,6 +459,20 @@ const steps: StepDef[] = [
     icon: <Sparkles className="h-4 w-4" />,
   },
 ];
+
+const stepIconMap: Record<StepKey, React.ReactNode> = {
+  coreIdentity: <MountainSnow className="h-4 w-4" />,
+  problem: <Target className="h-4 w-4" />,
+  audience: <Users className="h-4 w-4" />,
+  program: <ListChecks className="h-4 w-4" />,
+  budget: <Wallet className="h-4 w-4" />,
+  impact: <Ruler className="h-4 w-4" />,
+  visibility: <ImageIcon className="h-4 w-4" />,
+  branding: <Palette className="h-4 w-4" />,
+  partnerships: <Handshake className="h-4 w-4" />,
+  legalRisk: <ShieldAlert className="h-4 w-4" />,
+  vision: <Sparkles className="h-4 w-4" />,
+};
 
 type FieldDef<T extends StepKey> = {
   key: keyof DataModel[T] & string;
@@ -1109,6 +1120,66 @@ function mergeDataModel(partial: Partial<DataModel>): DataModel {
   return merged as DataModel;
 }
 
+const StepNavItem = React.memo(function StepNavItem({
+  step,
+  isActive,
+  pct,
+  done,
+  onPickStep,
+}: {
+  step: StepDef;
+  isActive: boolean;
+  pct: number;
+  done: boolean;
+  onPickStep: (key: StepKey) => void;
+}) {
+  const handleClick = React.useCallback(() => onPickStep(step.key), [onPickStep, step.key]);
+  return (
+    <button
+      onClick={handleClick}
+      className={cx(
+        "w-full rounded-2xl px-3 py-3 text-left transition",
+        "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
+        "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
+        isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={cx(
+            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+            isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
+          )}
+        >
+          {stepIconMap[step.key]}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <div className="truncate text-sm font-semibold text-white">{step.title}</div>
+            {done && (
+              <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
+                გაგზავნილი
+              </Badge>
+            )}
+          </div>
+          <div className="mt-0.5 truncate text-xs text-slate-300">{step.subtitle}</div>
+          <div className="mt-2 flex items-center gap-2">
+            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
+              {pct}%
+            </Badge>
+            <div className="h-1.5 flex-1 rounded-full bg-white/10">
+              <div
+                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+});
+
 function ChipInputField(props: {
   value: string;
   placeholder: string;
@@ -1438,30 +1509,6 @@ function glassCardClass(extra?: string) {
   );
 }
 
-async function postSubmission(payload: any) {
-  const res = await fetch("/api/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const text = await res.text().catch(() => "");
-  if (!res.ok) {
-    return { ok: false as const, skipped: false as const, message: text || `HTTP ${res.status}` };
-  }
-  return { ok: true as const, skipped: false as const, message: text || "შენახულია." };
-}
-
-function resolveDraftId(): string {
-  if (typeof window === "undefined") return DEFAULT_REMOTE_DRAFT_ID;
-  try {
-    const fromUrl = new URLSearchParams(window.location.search).get(DRAFT_ID_QUERY_PARAM)?.trim();
-    if (fromUrl) return fromUrl;
-  } catch {
-    // ignore invalid URL parsing
-  }
-  return DEFAULT_REMOTE_DRAFT_ID;
-}
-
 type DraftStatePayload = {
   data?: Partial<DataModel>;
   submitted?: Partial<Record<StepKey, boolean>>;
@@ -1488,45 +1535,6 @@ function toDraftSnapshot(payload: DraftStatePayload | null): DraftSnapshot {
   };
 }
 
-async function fetchDraftState(draftId: string) {
-  const res = await fetch(`/api/draft?draftId=${encodeURIComponent(draftId)}`, { method: "GET" });
-  const json = await res.json().catch(() => null);
-  if (!res.ok) {
-    return { ok: false as const, message: (json as any)?.message || `HTTP ${res.status}` };
-  }
-  return {
-    ok: true as const,
-    found: Boolean((json as any)?.found),
-    payload: ((json as any)?.draft ?? null) as DraftStatePayload | null,
-  };
-}
-
-async function patchDraftStepState(args: {
-  draftId: string;
-  stepKey: StepKey;
-  stepData: Record<string, string>;
-  activeIndex: number;
-  query: string;
-}) {
-  const res = await fetch("/api/draft", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      draftId: args.draftId,
-      stepKey: args.stepKey,
-      stepData: args.stepData,
-      activeIndex: args.activeIndex,
-      query: args.query,
-      updatedAt: new Date().toISOString(),
-    }),
-  });
-  const json = await res.json().catch(() => null);
-  if (!res.ok) {
-    return { ok: false as const, message: (json as any)?.message || `HTTP ${res.status}` };
-  }
-  return { ok: true as const, payload: ((json as any)?.draft ?? null) as DraftStatePayload | null };
-}
-
 export default function WomenAlpineSponsorKitBuilder() {
   const [data, setData] = React.useState<DataModel>(emptyData); // draftLocal
   const [draftSaved, setDraftSaved] = React.useState<DraftSnapshot | null>(null);
@@ -1534,7 +1542,6 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
-  const [draftId] = React.useState<string>(() => resolveDraftId());
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
@@ -1543,7 +1550,6 @@ export default function WomenAlpineSponsorKitBuilder() {
     status: "idle" | "saving" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
-  const [savingByStep, setSavingByStep] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
 
   const activeStep = steps[activeIndex];
   const activeKey = activeStep.key;
@@ -1562,8 +1568,6 @@ export default function WomenAlpineSponsorKitBuilder() {
   const overall = overallCompleteness(data);
   const stepPct = stepCompleteness(data, activeKey);
   const validation = validateStep(data, activeKey);
-  const activeStepSaving = savingByStep[activeKey];
-
   const dirtyByStep = React.useMemo(() => {
     const base = draftSaved?.data;
     const map = { ...INITIAL_SUBMITTED_STATE };
@@ -1580,24 +1584,24 @@ export default function WomenAlpineSponsorKitBuilder() {
     return map;
   }, [data, draftSaved]);
 
-  function shouldLeaveCurrentStep() {
+  const shouldLeaveCurrentStep = React.useCallback(() => {
     if (!dirtyByStep[activeKey]) return true;
     return window.confirm("You have unsaved changes on this step. Leave without submitting?");
-  }
+  }, [activeKey, dirtyByStep]);
 
   const goPrev = React.useCallback(() => {
     if (!shouldLeaveCurrentStep()) return;
     setActiveIndex((i) => clamp(i - 1, 0, steps.length - 1));
     setSubmitState({ status: "idle", message: "" });
-  }, [activeKey, dirtyByStep]);
+  }, [shouldLeaveCurrentStep]);
 
   const goNext = React.useCallback(() => {
     if (!shouldLeaveCurrentStep()) return;
     setActiveIndex((i) => clamp(i + 1, 0, steps.length - 1));
     setSubmitState({ status: "idle", message: "" });
-  }, [activeKey, dirtyByStep]);
+  }, [shouldLeaveCurrentStep]);
 
-  function onPickStep(key: StepKey) {
+  const onPickStep = React.useCallback((key: StepKey) => {
     const idx = steps.findIndex((s) => s.key === key);
     if (idx >= 0) {
       if (!shouldLeaveCurrentStep()) return;
@@ -1605,9 +1609,9 @@ export default function WomenAlpineSponsorKitBuilder() {
       setSubmitState({ status: "idle", message: "" });
       setMobileNavOpen(false);
     }
-  }
+  }, [shouldLeaveCurrentStep]);
 
-  function updateField(stepKey: StepKey, fieldKey: string, value: string) {
+  const updateField = React.useCallback((stepKey: StepKey, fieldKey: string, value: string) => {
     setData((prev) => ({
       ...prev,
       [stepKey]: {
@@ -1615,62 +1619,38 @@ export default function WomenAlpineSponsorKitBuilder() {
         [fieldKey]: value,
       },
     }));
-  }
+  }, []);
 
   React.useEffect(() => {
-    let cancelled = false;
-
-    async function loadInitialState() {
-      try {
-        const remote = await fetchDraftState(draftId);
-        if (!cancelled && remote.ok && remote.found && remote.payload) {
-          const snapshot = toDraftSnapshot(remote.payload);
-          setData(snapshot.data);
-          setSubmitted(snapshot.submitted);
-          setActiveIndex(snapshot.activeIndex);
-          setQuery(snapshot.query);
-          setDraftSaved(snapshot);
-          setLocalSaveMessage("Loaded draft from database.");
-          return;
-        }
-        if (!cancelled && remote.ok && !remote.found) {
-          const snapshot = toDraftSnapshot({
-            data: emptyData,
-            submitted: INITIAL_SUBMITTED_STATE,
-            activeIndex: 0,
-            query: "",
-          });
-          setData(snapshot.data);
-          setSubmitted(snapshot.submitted);
-          setActiveIndex(snapshot.activeIndex);
-          setQuery(snapshot.query);
-          setDraftSaved(snapshot);
-          setLocalSaveMessage("No saved draft in database. Started with initial values.");
-          return;
-        }
-      } catch {
-        if (!cancelled) {
-          setData(mergeDataModel(emptyData));
-          setSubmitted({ ...INITIAL_SUBMITTED_STATE });
-          setDraftSaved(toDraftSnapshot({ data: emptyData, submitted: INITIAL_SUBMITTED_STATE, activeIndex: 0, query: "" }));
-          setLocalSaveMessage("Failed to load draft from database.");
-        }
+    try {
+      const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as DraftStatePayload;
+        const snapshot = toDraftSnapshot(parsed);
+        setData(snapshot.data);
+        setSubmitted(snapshot.submitted);
+        setActiveIndex(snapshot.activeIndex);
+        setQuery(snapshot.query);
+        setDraftSaved(snapshot);
+        setLocalSaveMessage("დრაფტი ჩაიტვირთა.");
+        return;
       }
+    } catch {
+      // ignore parse errors, fall through to defaults
     }
+    const snapshot = toDraftSnapshot({ data: emptyData, submitted: INITIAL_SUBMITTED_STATE, activeIndex: 0, query: "" });
+    setData(snapshot.data);
+    setSubmitted(snapshot.submitted);
+    setDraftSaved(snapshot);
+  }, []);
 
-    void loadInitialState();
-    return () => {
-      cancelled = true;
-    };
-  }, [draftId]);
-
-  function saveDraftLocal(overrides?: {
+  const saveDraftLocal = React.useCallback((overrides?: {
     data?: DataModel;
     submitted?: Record<StepKey, boolean>;
     activeIndex?: number;
     query?: string;
     message?: string;
-  }) {
+  }) => {
     try {
       const payload = {
         data: overrides?.data ?? data,
@@ -1684,10 +1664,9 @@ export default function WomenAlpineSponsorKitBuilder() {
     } catch {
       setLocalSaveMessage("Local save failed.");
     }
-  }
+  }, [data, submitted, activeIndex, query]);
 
-  async function submitCurrentStep() {
-    if (savingByStep[activeKey]) return;
+  const submitCurrentStep = React.useCallback(() => {
     const check = validateStep(data, activeKey);
     if (!check.ok) {
       setSubmitState({
@@ -1697,63 +1676,13 @@ export default function WomenAlpineSponsorKitBuilder() {
       return;
     }
 
-    setSavingByStep((prev) => ({ ...prev, [activeKey]: true }));
-    setSubmitState({ status: "saving", message: "ინახება…" });
-
-    const payload = {
-      timestamp: new Date().toISOString(),
-      draftId,
-      stepKey: activeKey,
-      stepData: data[activeKey],
-      fullData: data,
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-
-      // Compatibility fields for older backend readers.
-      submittedAt: new Date().toISOString(),
-      stepTitle: activeStep.title,
-      stepCompleteness: stepCompleteness(data, activeKey),
-      overallCompleteness: overallCompleteness(data),
-      data: data[activeKey],
-      fullDraft: data,
-    };
-
-    try {
-      const res = await postSubmission(payload);
-      if (!res.ok) {
-        setSubmitState({ status: "error", message: res.message || "შენახვა ვერ მოხერხდა." });
-        setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
-        return;
-      }
-      const remoteSave = await patchDraftStepState({
-        draftId,
-        stepKey: activeKey,
-        stepData: { ...(data[activeKey] as Record<string, string>) },
-        activeIndex,
-        query,
-      });
-      if (!remoteSave.ok) {
-        setSubmitState({ status: "error", message: `Database save failed: ${remoteSave.message}` });
-        setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
-        return;
-      }
-      const snapshot = toDraftSnapshot(remoteSave.payload);
-      setDraftSaved(snapshot);
-      setData(snapshot.data);
-      setSubmitted(snapshot.submitted);
-      setActiveIndex(snapshot.activeIndex);
-      setQuery(snapshot.query);
-      setSubmitState({ status: "success", message: "Saved to database ✅" });
-      setLocalSaveMessage("Step submitted and merged into database draft.");
-      saveDraftLocal({ data: snapshot.data, submitted: snapshot.submitted, message: "Saved locally." });
-      setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
-    } catch (e: any) {
-      setSubmitState({
-        status: "error",
-        message: e?.message ? String(e.message) : "შენახვა ვერ მოხერხდა.",
-      });
-      setSavingByStep((prev) => ({ ...prev, [activeKey]: false }));
-    }
-  }
+    const nextSubmitted = { ...submitted, [activeKey]: true };
+    const snapshot = toDraftSnapshot({ data, submitted: nextSubmitted, activeIndex, query });
+    setSubmitted(nextSubmitted);
+    setDraftSaved(snapshot);
+    saveDraftLocal({ data, submitted: nextSubmitted, message: "ეტაპი შენახულია." });
+    setSubmitState({ status: "success", message: "ეტაპი შენახულია ✅" });
+  }, [activeKey, data, submitted, activeIndex, query, saveDraftLocal]);
 
   const preview = React.useMemo(() => {
     const name = data.coreIdentity.officialName || "ქალთა ალპური სკოლა";
@@ -1780,20 +1709,6 @@ export default function WomenAlpineSponsorKitBuilder() {
   React.useEffect(() => {
     setHeaderLogoFailed(false);
   }, [headerLogoSrc]);
-
-  const stepIconMap: Record<StepKey, React.ReactNode> = {
-    coreIdentity: <MountainSnow className="h-4 w-4" />,
-    problem: <Target className="h-4 w-4" />,
-    audience: <Users className="h-4 w-4" />,
-    program: <ListChecks className="h-4 w-4" />,
-    budget: <Wallet className="h-4 w-4" />,
-    impact: <Ruler className="h-4 w-4" />,
-    visibility: <ImageIcon className="h-4 w-4" />,
-    branding: <Palette className="h-4 w-4" />,
-    partnerships: <Handshake className="h-4 w-4" />,
-    legalRisk: <ShieldAlert className="h-4 w-4" />,
-    vision: <Sparkles className="h-4 w-4" />,
-  };
 
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-200">
@@ -1898,56 +1813,16 @@ export default function WomenAlpineSponsorKitBuilder() {
 
               <ScrollArea className="flex-1">
                 <div className="p-2">
-                  {filteredSteps.map((s) => {
-                    const pct = stepCompleteness(data, s.key);
-                    const isActive = s.key === activeKey;
-                    const done = submitted[s.key];
-                    return (
-                      <button
-                        key={s.key}
-                        onClick={() => onPickStep(s.key)}
-                        className={cx(
-                          "w-full rounded-2xl px-3 py-3 text-left transition",
-                          "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
-                          "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
-                          isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={cx(
-                              "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-                              isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
-                            )}
-                          >
-                            {stepIconMap[s.key]}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <div className="truncate text-sm font-semibold text-white">{s.title}</div>
-                              {done ? (
-                                <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
-                                  გაგზავნილი
-                                </Badge>
-                              ) : null}
-                            </div>
-                            <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
-                            <div className="mt-2 flex items-center gap-2">
-                            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
-                              {pct}%
-                            </Badge>
-                            <div className="h-1.5 flex-1 rounded-full bg-white/10">
-                              <div
-                                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {filteredSteps.map((s) => (
+                    <StepNavItem
+                      key={s.key}
+                      step={s}
+                      isActive={s.key === activeKey}
+                      pct={stepCompleteness(data, s.key)}
+                      done={submitted[s.key]}
+                      onPickStep={onPickStep}
+                    />
+                  ))}
                 </div>
               </ScrollArea>
             </div>
@@ -1975,56 +1850,16 @@ export default function WomenAlpineSponsorKitBuilder() {
 
             <ScrollArea className="max-h-[45vh] flex-1 xl:max-h-none">
               <div className="p-2">
-                {filteredSteps.map((s) => {
-                  const pct = stepCompleteness(data, s.key);
-                  const isActive = s.key === activeKey;
-                  const done = submitted[s.key];
-                  return (
-                    <button
-                      key={s.key}
-                      onClick={() => onPickStep(s.key)}
-                      className={cx(
-                        "w-full rounded-2xl px-3 py-3 text-left transition",
-                        "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
-                        "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
-                        isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={cx(
-                            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-                            isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
-                          )}
-                        >
-                          {stepIconMap[s.key]}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <div className="truncate text-sm font-semibold text-white">{s.title}</div>
-                            {done && (
-                              <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
-                                გაგზავნილი
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="mt-0.5 truncate text-xs text-slate-300">{s.subtitle}</div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
-                              {pct}%
-                            </Badge>
-                            <div className="h-1.5 flex-1 rounded-full bg-white/10">
-                              <div
-                                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+                {filteredSteps.map((s) => (
+                  <StepNavItem
+                    key={s.key}
+                    step={s}
+                    isActive={s.key === activeKey}
+                    pct={stepCompleteness(data, s.key)}
+                    done={submitted[s.key]}
+                    onPickStep={onPickStep}
+                  />
+                ))}
               </div>
             </ScrollArea>
 
@@ -2232,32 +2067,17 @@ export default function WomenAlpineSponsorKitBuilder() {
                     </Button>
                     <Button
                       onClick={submitCurrentStep}
-                      disabled={activeStepSaving}
                       className={gradientButtonClass("h-10 w-full sm:w-auto")}
                     >
-                      {activeStepSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          იგზავნება…
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          ამ ეტაპის გაგზავნა
-                        </>
-                      )}
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      ამ ეტაპის გაგზავნა
                     </Button>
                   </div>
 
                   <div className="min-w-0">
                     {submitState.status === "idle" ? (
                       <div className="text-sm text-slate-400">
-                        გაგზავნეთ ეს ეტაპი შესანახად (სრული დრაფტის სნეპშოტთან ერთად).
-                      </div>
-                    ) : activeStepSaving ? (
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {submitState.message}
+                        შეავსეთ სავალდებულო ველები და გაგზავნეთ ეტაპი შესანახად.
                       </div>
                     ) : submitState.status === "success" ? (
                       <div className="flex items-center gap-2 text-sm text-emerald-200">
@@ -2292,13 +2112,12 @@ export default function WomenAlpineSponsorKitBuilder() {
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-white">შენახვის შენიშვნა</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        In-memory edits stay local until submit. Submit sends step payload to{" "}
-                        <span className="text-slate-200">/api/submit</span> and merges saved step state in{" "}
-                        <span className="text-slate-200">/api/draft</span>.
+                        <span className="text-slate-200">დრაფტის შენახვა</span> — ინახავს მიმდინარე მდგომარეობას ნებისმიერი ვალიდაციის გარეშე.{" "}
+                        <span className="text-slate-200">ეტაპის გაგზავნა</span> — ამოწმებს სავალდებულო ველებს, ნიშნავს ეტაპს შესრულებულად და ინახავს.
                       </div>
                     </div>
                     <Badge className="border border-white/10 bg-slate-950/60 text-slate-200">
-                      DB on submit
+                      localStorage
                     </Badge>
                   </div>
                 </div>
@@ -2440,10 +2259,8 @@ export default function WomenAlpineSponsorKitBuilder() {
             <span className="text-slate-300">თემა:</span> მუქი გლასი • ფონი #070A12 • ბარათები slate-950/60
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">ენდპოინტი:</span>{" "}
-            <span className="text-slate-200">
-              /api/submit
-            </span>
+            <span className="text-slate-300">შენახვა:</span>{" "}
+            <span className="text-slate-200">localStorage</span>
           </div>
         </div>
       </div>
