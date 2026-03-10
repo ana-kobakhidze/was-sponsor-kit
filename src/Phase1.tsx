@@ -310,19 +310,21 @@ export default function Phase1() {
 
   // Load from remote on mount; remote wins over localStorage
   React.useEffect(() => {
-    fetch(`/api/draft?draftId=${PHASE1_DRAFT_ID}`)
+    fetch(`/api/phase1-draft?draftId=${PHASE1_DRAFT_ID}`)
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
-      .then((remote: Phase1Data | null) => {
-        if (remote) setData((local) => ({ ...local, ...remote }));
+      .then((res: { ok: boolean; found: boolean; data?: Phase1Data } | null) => {
+        if (res?.ok && res.found && res.data) {
+          setData((local) => ({ ...local, ...res.data }));
+        }
       });
   }, []);
 
   async function save() {
     try {
       localStorage.setItem(PHASE1_KEY, JSON.stringify(data));
-      await fetch("/api/draft", {
-        method: "PATCH",
+      await fetch("/api/phase1-draft", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draftId: PHASE1_DRAFT_ID, data }),
       }).catch(() => {}); // ignore network errors; localStorage save already succeeded
