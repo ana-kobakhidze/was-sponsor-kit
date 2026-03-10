@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Save, CheckCircle2, Plus, X } from "lucide-react";
 
 const PHASE1_KEY = "was_phase1_draft_v1";
+const PHASE1_DRAFT_ID = "phase1-shared-draft";
 
 // ── types ────────────────────────────────────────────────────────────────────
 
@@ -61,33 +62,33 @@ type Phase1Data = {
 const DEFAULT_DATA: Phase1Data = {
   header: {
     emoji: "🏔️",
-    title: "სპონსორობის გამოშვების გეგმა\nმარ–აპრ 2026",
-    subtitle: "დრო: 4 კვირა · 5 პარალელური გუნდი · 25+ მოხალისე",
+    title: "SPA Project kickoff \nმარ–აპრ 2026",
+    subtitle: "დრო: 4 კვირა · 3 პარალელური გუნდი · 25+ მოხალისე",
   },
   props: {
     status: "🟢 მიმდინარე",
     startDate: "მარ 10, 2026",
     endDate: "აპრ 7, 2026",
     owner: "ფოფო",
-    teamsCount: "5 გუნდი",
+    teamsCount: "3 გუნდი",
     targetSponsors: "5 კომპანია",
   },
   callout:
-    "ყველა 5 გუნდი მუშაობს პარალელურად, რათა ბრენდინგი → კონტენტი → აუთრიჩი → ავტომატიზაცია მოხდეს ერთდროულად. ყოველ კვირას 30 წთ-იანი სინქი.",
+    "ყველა 3 გუნდი მუშაობს პარალელურად, რათა ბრენდინგი → კონტენტი → აუთრიჩი → ავტომატიზაცია მოხდეს ერთდროულად. ყოველ კვირას 30 წთ-იანი სინქი.",
   goals: [
-    { id: "g1", icon: "🚀", text: "დავიწყოთ პროექტზე მუშაობა" },
-    { id: "g2", icon: "🤝", text: "ვიპოვოთ 5 კომპანია ღირებულებების შესაბამისად" },
-    { id: "g3", icon: "📅", text: "წინასწარ შევქმნათ 1 თვის კონტენტი" },
-    { id: "g4", icon: "📱", text: "დავიწყოთ სოც. ქსელებში აქტიურობა" },
+    { id: "g1", icon: "🚀 დავიწყოთ პროექტზე მუშაობა ", text: "დავიწყოთ პროექტზე მუშაობა" },
+    { id: "g2", icon: "🤝 ვიპოვოთ 5 კომპანია ღირებულებების შესაბამისად", text: "ვიპოვოთ 5 კომპანია ღირებულებების შესაბამისად" },
+    { id: "g3", icon: "📅წინასწარ შევქმნათ 1 თვის კონტენტი", text: "წინასწარ შევქმნათ 1 თვის კონტენტი" },
+    { id: "g4", icon: "📱📱 დავიწყოთ სოც. ქსელებში აქტიურობა", text: "დავიწყოთ სოც. ქსელებში აქტიურობა" },
   ],
   teams: [
     {
       id: "marine",
-      emoji: "🏔️",
+      emoji: "🏔️ ფბ ",
       name: 'გუნდი "მარინე"',
       role: "ბრენდინგი",
       color: "#2d5a3d",
-      alpinist: "მარინე უთმელიძე — ქართველი ალპინისტი",
+      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
       tasks: [
         "ბრენდის ღირებულებების განსაზღვრა (3–5)",
         "მოკლე ბრენდის დოკუმენტი (1 გვერდი)",
@@ -99,11 +100,11 @@ const DEFAULT_DATA: Phase1Data = {
     },
     {
       id: "aleksandra",
-      emoji: "⛰️",
+      emoji: "⛰️ ინსტა",
       name: 'გუნდი "ალექსანდრა"',
       role: "სპონსორები & გრანტები",
       color: "#5a3d2d",
-      alpinist: "ალექსანდრა ჯაფარიძე — ქართველი ალპინისტი",
+      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
       tasks: [
         "20 კანდიდატ-კომპანიის სია",
         "ტოპ 5 შორტლისტი კამპანიების მიხედვით",
@@ -115,50 +116,50 @@ const DEFAULT_DATA: Phase1Data = {
     },
     {
       id: "lamara",
-      emoji: "📸",
+      emoji: "📸 ტიკტოკი",
       name: 'გუნდი "ლამარა"',
       role: "სოც. მედია & კონტენტი",
       color: "#2d3d5a",
-      alpinist: "ლამარა ჯაფარიძე — ქართველი ალპინისტი",
+      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
       tasks: [
         "1 თვის კონტენტ კალენდარი",
         "LinkedIn (აუცილებელი), Instagram, TikTok",
         "გადაღებების დაგეგმვა",
         "თანამშრომლობა ბრენდინგ გუნდთან",
       ],
-      leader: "👑 ლიდერი",
+      leader: "👑 ლიდი - სახელი ",
       members: ["მარიამ მ.", "თამთა ტ.", "ანი ყ.", "მარი ზ.", "ანა კ."],
     },
     {
       id: "nino",
-      emoji: "⚙️",
+      emoji: "⚙️ ტექი",
       name: 'გუნდი "ნინო"',
       role: "ტექნიკა & ავტომატიზაცია",
       color: "#4a2d5a",
-      alpinist: "ნინო ჩხეიძე — ქართველი ალპინისტი",
+      alpinist: "პოსტების დადება განთავსება  მაქსიმალიურად გამარტივდეს",
       tasks: [
         "Buffer / Later-ის სქედიულინგის დაყენება",
         "სასპონსორო კიტის გენერატორი",
         "1 თვის პოსტების სქედიულინგი",
         "ყოველკვირეული რეპორტინგი",
       ],
-      leader: "👑 ლიდერი",
+      leader: "👑 ლიდი - სახელი ",
       members: ["ელენე დ.", "ანი ბ.", "ნინო სნ.", "სალომე კ.", "ეკა ა."],
     },
     {
       id: "maia",
-      emoji: "🧭",
+      emoji: "🧭 ბრენდინგი",
       name: 'გუნდი "მაია"',
       role: "გასვლები & ტრენინგები",
       color: "#5a4a2d",
-      alpinist: "მაია წყნეთელი — ქართველი ალპინისტი",
+      alpinist: " მიზანი -გვქონდეს ვიზუალური ინდეტობა ",
       tasks: [
-        "პირველი ტრენინგის დაგეგმვა",
-        "ოპერაცია/ლოგისტიკა vs კონტენტ-გუნდი",
+        "ბრენდის ღირებულებების განსაზღვრა (3–5)",
+        "მოკლე ბრენდის დოკუმენტი (1 გვერდი)",
         "ყოველ აქტივობას — კონტენტის გეგმა",
-        "სრიალის ასოციაციასთან კოორდინაცია",
+        "სოც. მედიის ვიზუალური სტილი",
       ],
-      leader: "👑 ლიდერი",
+      leader: "👑  ლიდი - სახელი ",
       members: ["მარიამ ლ.", "ანა ჩანგ.", "თამარ გ.", "სალომე ც.", "ანი ზ."],
       fullWidth: true,
     },
@@ -176,6 +177,7 @@ const DEFAULT_DATA: Phase1Data = {
       "რა ბლოკავს პროგრესს",
       "შემდეგი კვირის პრიორიტეტები",
       "ვის / რა სჭირდება დახმარება",
+      "",
     ],
     rules: [
       "ყველა კითხვა იკვრება ფოფოსთან",
@@ -306,9 +308,24 @@ export default function Phase1() {
 
   const [saved, setSaved] = React.useState(false);
 
-  function save() {
+  // Load from remote on mount; remote wins over localStorage
+  React.useEffect(() => {
+    fetch(`/api/draft?draftId=${PHASE1_DRAFT_ID}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((remote: Phase1Data | null) => {
+        if (remote) setData((local) => ({ ...local, ...remote }));
+      });
+  }, []);
+
+  async function save() {
     try {
       localStorage.setItem(PHASE1_KEY, JSON.stringify(data));
+      await fetch("/api/draft", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId: PHASE1_DRAFT_ID, data }),
+      }).catch(() => {}); // ignore network errors; localStorage save already succeeded
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch { /* ignore */ }
@@ -547,12 +564,12 @@ export default function Phase1() {
 
         {/* ── Goals ── */}
         <SectionHeading emoji="🎯" title="მიზნები" />
-        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {data.goals.map((g, i) => (
-            <div key={g.id} className="group flex items-start gap-3 rounded-xl border border-[#e8e3db] bg-white p-4 hover:shadow-sm transition-shadow">
-              <EI value={g.icon} onChange={(v) => upGoal(i, "icon", v)} className="w-9 shrink-0 text-xl" />
-              <EA value={g.text} onChange={(v) => upGoal(i, "text", v)} className="flex-1 text-sm leading-relaxed" />
-              <button onClick={() => removeGoal(i)} className="mt-0.5 hidden shrink-0 text-[#6b6459] hover:text-rose-500 group-hover:block">
+            <div key={g.id} className="group flex items-center gap-2 rounded-lg border border-[#e8e3db] bg-white px-3 py-2 hover:shadow-sm transition-shadow">
+              <EI value={g.icon} onChange={(v) => upGoal(i, "icon", v)} className="w-7 shrink-0 text-base" />
+              <EI value={g.text} onChange={(v) => upGoal(i, "text", v)} className="flex-1 text-sm" />
+              <button onClick={() => removeGoal(i)} className="hidden shrink-0 text-[#6b6459] hover:text-rose-500 group-hover:block">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
