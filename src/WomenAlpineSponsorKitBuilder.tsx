@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom";
 import waLogo from "@/assets/wa.png";
 
 type StepKey =
@@ -1773,6 +1774,12 @@ export default function WomenAlpineSponsorKitBuilder() {
               >
                 {overall >= 80 ? "სპონსორისთვის მზად" : "დრაფტი"}
               </Badge>
+              <Link
+                to="/phase1"
+                className="rounded-lg border border-white/10 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+              >
+                Phase 1 →
+              </Link>
             </div>
           </div>
         </div>
