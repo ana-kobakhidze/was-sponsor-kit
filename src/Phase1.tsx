@@ -1,775 +1,734 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
-import { Save, CheckCircle2, Plus, X } from "lucide-react";
+import { useEffect, useRef, useCallback, useState, createContext, useContext } from "react";
+import type { ReactNode } from "react";
 
-const PHASE1_KEY = "was_phase1_draft_v1";
-const PHASE1_DRAFT_ID = "phase1-shared-draft";
+/* ═══════════════════════════════════════════════════════════════════════════
+   Women's Alpine School — Strategic Brainstorm (Phase 1 page)
+   All text is inline-editable. Save persists to /api/phase1-draft (Supabase).
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-// ── types ────────────────────────────────────────────────────────────────────
+// ── Data layer ──────────────────────────────────────────────────────────────
 
-type Goal = { id: string; icon: string; text: string };
+type Phase1Data = Record<string, string>;
+type Ctx = { d: Phase1Data; set: (k: string, v: string) => void };
+const Phase1Ctx = createContext<Ctx>({ d: {}, set: () => {} });
 
-type Team = {
-  id: string;
-  emoji: string;
-  name: string;
-  role: string;
-  color: string;
-  alpinist: string;
-  tasks: string[];
-  leader: string;
-  members: string[];
-  fullWidth?: boolean;
+const LS_KEY = "was_phase1_content_v2";
+const DRAFT_ID = "phase1-shared-draft";
+
+const DEFAULTS: Phase1Data = {
+  cover_title: "Women's Alpine School",
+  cover_subtitle: "Brand Foundation · Phase Strategy · Sponsor Roadmap",
+  cover_location: "Tbilisi, Georgia · 2026",
+
+  s01_title: "Who We Are",
+  s01_intro: "Women's Alpine School is a Georgia-based community founded by Popo — a 40-year-old architect, mother, and mountaineer who started climbing at 33 in the Caucasus. Last year she led 35 women to the summit of Kazbegi. She teaches from her home, charges nothing, and mentors 30–50 women at a time. Now 150 of us have gathered around her to build this into something lasting.",
+  s01_sub1: "The Real Version",
+  s01_p1: "In Georgia, the mountains have always been masculine territory. The Caucasus produced extraordinary women alpinists — Alexandra Japaridze, Marina Utmelidze — but for most women, the alpine world remained closed. The gear was not made for you. The teams did not invite you. The culture did not expect you.",
+  s01_p2: "Popo did not care. She started climbing at 33, and once she proved herself, she did not walk through that door alone — she held it open. She began teaching other women, sharing knowledge, making the path shorter for those coming after her.",
+  s01_p3: "She does not ask how old you are. She does not ask where you come from. She teaches anyone who shows up. Often from her own home. Often for free.",
+  s01_p4: "That is how Women's Alpine School was born — not from a business plan, but from one woman's refusal to let other women face the mountain alone.",
+  s01_status: JSON.stringify(["150+ community members rallying around Popo's mission","30–50 women actively training and climbing each season","35 women summited Kazbegi last year under Popo's guidance","Grant secured from Tbilisi mayor's office for a training facility","Building secured — renovation funding still needed","Gear shortage during climbing season remains a critical bottleneck","No formal brand presence, social media strategy, or sponsor relationships yet"]),
+
+  s02_title: "Brand Foundation",
+  s02_mission: "To open the mountains of Georgia to every woman who wants to climb — regardless of age, background, or experience — through free education, community, and the stubborn belief that the summit belongs to anyone willing to try.",
+  s02_vision: "A Georgia where no woman has to prove she deserves to be on a mountain. Where the alpine world is as welcoming to a 40-year-old mother from Tbilisi as it is to anyone else. Where the Caucasus belongs to everyone brave enough to climb.",
+  s02_values: JSON.stringify([
+    { label: "Open Summits", desc: "The mountains belong to everyone. We remove barriers — financial, cultural, and psychological — that keep women from climbing." },
+    { label: "Earned Through Effort", desc: "You do not need anyone's approval to climb. You only need to show up and work." },
+    { label: "Teach, Don't Gate-Keep", desc: "Knowledge flows freely. Popo teaches from her home for free. That generosity is our DNA." },
+    { label: "Strength in Sisterhood", desc: "The mountain is easier when you are not alone. We climb together, fail together, summit together." },
+    { label: "Quiet Power", desc: "We do not shout. We let 35 women standing on Kazbegi speak for itself." },
+  ]),
+  s02_voiceIntro: "WAS speaks like Popo leads — direct, warm, no-nonsense, and deeply generous. We do not use corporate language. We do not perform inspiration. We tell real stories about real women on real mountains.",
+  s02_card1_label: "We sound like", s02_card1_title: "A trusted guide", s02_card1_body: "Confident but not arrogant. Warm but not soft. Like Popo telling you to check your harness one more time.",
+  s02_card2_label: "We never sound like", s02_card2_title: "A wellness brand", s02_card2_body: "Not a fitness influencer. Not a motivational poster. Not a charity. We are a school, not a support group.",
+  s02_card3_label: "Our tone shifts", s02_card3_title: "With the moment", s02_card3_body: "Serious on safety. Proud on summits. Playful in the mess. Always honest. When things are funny — we laugh.",
+
+  s03_title: "The Three Phases",
+  s03_intro: "Each phase tells our story to the public and maps to an organizational goal. They are sequential — each builds credibility and audience for the next.",
+  s03_p1_tag: "\"Nothing will work for you.\"", s03_p1_desc: "The Inner Voice — name the doubt, make women feel seen.", s03_p1_goal: "Awareness + followers",
+  s03_p2_tag: "\"Try anyway.\"", s03_p2_desc: "The Path — show the work, build trust and community.", s03_p2_goal: "Engagement + community",
+  s03_p3_tag: "\"Nothing will work — until it does.\"", s03_p3_desc: "The Summit — prove the model, attract partners.", s03_p3_goal: "Sponsorships + sustainability",
+
+  ph1_tagline: "Nothing will work for you.",
+  ph1_geo: "თუ არც გამოვა",
+  ph1_innerVoice_title: "The Inner Voice",
+  ph1_innerVoice_intro: "This phrase is not something society says to women from the outside. Most of the time, it is something women say to themselves — and it's never poetic. It's the 2am Google search. The excuse that sounds reasonable. The joke you make about yourself before anyone else can:",
+  ph1_voice_selfRoast: JSON.stringify(["You're 35 and you've never been on skis. This is going to be embarrassing.","Everyone else started when they were twelve. You started last Tuesday."]),
+  ph1_voice_anxious: JSON.stringify(["What if you're the slowest one and everyone has to wait for you?","You can't even keep a plant alive and you want to summit Kazbegi?"]),
+  ph1_voice_almostQuit: JSON.stringify(["Maybe next year. When I'm more prepared.","This is a hobby for people who have their life together."]),
+  ph1_voice_laugh: JSON.stringify(["I fell getting OFF the ski lift. Not on the slope. Off the lift.","My 'mountain gear' is a Zara jacket and borrowed gloves."]),
+  ph1_naming: "Phase 1 names this voice out loud. Not to defeat it — but to show every woman watching that she is not the only one who hears it.",
+  ph1_emotional: "Make women feel seen in their doubt. Most empowerment content skips to triumph. We start with truth: that most women talk themselves out of things before anyone else has a chance to. Phase 1 says: we know. We hear it too. And we're going anyway.",
+  ph1_strategic: "Build initial audience through emotional resonance. Content should make women smile with self-recognition, nod their heads, and hit share. It should travel beyond our 150 members to reach women who do not know WAS exists yet.",
+  ph1_ski_title: "The Ski Touring Trip",
+  ph1_ski_intro: "During Phase 1, WAS will organize a ski touring trip where most participants do not know how to ski. This is intentional.",
+  ph1_ski_p1: "The activities include skiing, paragliding, climbing, and going to the mountains — all things most participants have never done, and many thought they were \"too late\" to start.",
+  ph1_ski_p2: "The goal is not perfect performance. The goal is real emotions captured honestly:",
+  ph1_ski_bullets: JSON.stringify(["Falling — and the face you make right before you fall","Struggling — and the moment you realize everyone else is struggling too","Laughing — because it turns out this is actually fun","Frustration — the honest kind, not performed for camera","Trying again — because what else are you going to do","The surprise moment — when you realize you almost forgot to be afraid"]),
+  ph1_ski_p3: "Women watching should recognize themselves. They should have a knowing smile. The content should feel like looking in a mirror, not watching a highlight reel.",
+  ph1_fun_title: "The Fun Factor",
+  ph1_fun_p1: "The trap with vulnerability content is that it becomes heavy, sad, and performative. Phase 1 is not a therapy session. It is a group of women falling on skis and laughing about it. The absurdity of trying paragliding when you have never been comfortable on a chairlift. The moment when fear turns into a grin.",
+  ph1_fun_quote: "Yes, I told myself nothing would work. And then I did it anyway. And it was terrible. And it was hilarious. And I want to do it again.",
+  ph1_mental_title: "The Mental Health Connection",
+  ph1_mental_p1: "When you are focused on movement — on balance, on breathing, on the next step — something happens: the noise disappears. Problems pause. Overthinking stops. For a moment, you are simply present.",
+  ph1_mental_p2: "This is one of the strongest experiences the mountains give people. Particularly powerful for women carrying the weight of self-doubt, anxiety, and the pressure to be everything for everyone.",
+  ph1_mental_p3: "We do not market this as therapy. We show it. A woman's face when she reaches a ridge and realizes she has not thought about her inbox in three hours. That is the content.",
+  ph1_pillars: JSON.stringify([
+    { label: "The Inner Voice Series", desc: "Short-form content featuring real WAS women sharing their specific doubt before starting. Text overlays on mountain footage. The doubt in large text, then what happened next." },
+    { label: "Ski Trip Documentary", desc: "Raw behind-the-scenes footage. Falls, laughter, frustration, first attempts. Short clips for Reels/TikTok and longer recap for YouTube. The anchor content of Phase 1." },
+    { label: "Popo's Origin Story", desc: "The founding narrative across multiple posts. Started at 33. Architect. Mother. Teaches from home for free. The hero story that anchors the brand." },
+    { label: "Georgia's Women Alpinists", desc: "Posts honoring Japaridze, Utmelidze, and others. Reclaiming their stories to show women have always belonged in the Caucasus." },
+    { label: "The Numbers", desc: "Infographics: women vs. men in Georgian climbing, gear costs, female mountain guides. Data that makes the problem visible and shareable." },
+    { label: "\"I Almost Forgot\" Moments", desc: "The moment during activity where a woman forgets her fear and is just present. Slow-motion, quiet music, real faces. Tagline: \"Almost forgot it's for fun.\"" },
+  ]),
+  ph1_calendar: JSON.stringify([
+    { day: "01", ig: "Logo reveal + \"We are WAS\"", tt: "—", st: "Countdown teaser" },
+    { day: "02", ig: "Popo Part 1: Started at 33", tt: "—", st: "Old climbing photos" },
+    { day: "03", ig: "—", tt: "Inner Voice #1: \"Too old\"", st: "Poll: What did you tell yourself?" },
+    { day: "05", ig: "Georgia's women alpinists", tt: "—", st: "History: Japaridze" },
+    { day: "07", ig: "Popo Part 2: Teaching", tt: "Inner Voice #2: \"Not for you\"", st: "Popo Q&A" },
+    { day: "09", ig: "The Numbers infographic", tt: "—", st: "Reactions to the data" },
+    { day: "10", ig: "—", tt: "Ski teaser: \"None of us can ski\"", st: "Gear packing chaos" },
+    { day: "12", ig: "Ski Day 1: falls + laughs", tt: "Every fall compilation", st: "Live from the mountain" },
+    { day: "14", ig: "\"Almost Forgot\" moment", tt: "Before vs. after first run", st: "Week 2 recap" },
+  ]),
+  ph1_metrics: JSON.stringify(["Follower growth rate — target: 1,000–2,000 in first 8 weeks","Share and save rate on posts","DMs and comments from women saying \"this is me\"","Ski trip content performance (views, engagement, reach)","Email list signups from landing page"]),
+  ph1_questions: JSON.stringify(["How raw do we go? Are women comfortable on camera with self-doubt stories?","Do we lead with Popo's story or the collective Inner Voice series?","Hashtag: #WomensAlpineSchool? Something in Georgian?","Language: Georgian only, bilingual, or English-first?","Instagram + TikTok simultaneously, or Instagram first?","Do we have a videographer for the ski trip?","Should we invite women from outside the community?"]),
+
+  ph2_tagline: "Try anyway. Trust the process.",
+  ph2_intro: "The doubt has been named. Now we show what happens when you ignore it.",
+  ph2_bullets: JSON.stringify(["The shift from doubt to persistence","Training diaries: documenting real progress","First-timer arcs: zero to first summit","Popo Teaches: educational short-form content","The gear reality: honest content seeding Phase 3","Community moments: sisterhood in action","The facility renovation story"]),
+  ph3_tagline: "Nothing will work — until it does.",
+  ph3_intro: "The summit — literally and strategically. WAS has a story, documented proof, and is ready for sponsors.",
+  ph3_bullets: JSON.stringify(["Summit stories: professional photos and video","Impact numbers: women trained, summits completed","Transformation arcs: before/after stories","\"Until It Does\" series: same women from Phase 1, now on the summit","Partnership announcements","Vision: what comes next for WAS"]),
+
+  s04_title: "Sponsor Roadmap",
+  s04_intro: "Sponsorship does not start with asking. It starts with building something so visible and compelling that companies want to be associated with it.",
+  s04_stage1: JSON.stringify(["Professional photos of training and summits","Video content showing the community in action","Clear numbers: women trained, summits, community size","Active social media with consistent engagement","The facility story (grant, renovation plans)","Press coverage, even from small local outlets"]),
+  s04_stage2: JSON.stringify(["One-page brand overview","Sponsor deck (PDF, 8–12 pages, designed)","Sponsorship tiers with clear value proposition","Budget breakdown: renovation, gear, events"]),
+  s04_tiers: JSON.stringify([
+    { label: "Tier 1: Outdoor / Gear", desc: "The North Face, Mammut, Salomon, Georgian retailers. Gear sponsorship or equipment loans." },
+    { label: "Tier 2: Georgian Corporate", desc: "TBC, Bank of Georgia, Magti, Silknet. CSR partnership, women's empowerment alignment." },
+    { label: "Tier 3: International NGOs", desc: "Women's empowerment, sports access funding. Grant applications with proven impact data." },
+    { label: "Tier 4: Tourism / Government", desc: "Georgian Tourism Administration, Ministry of Sport. Adventure tourism narrative." },
+  ]),
+  s04_sponsorGets: JSON.stringify(["Association with a genuine grassroots women's movement","Authentic content in real mountain settings","Access to a growing, engaged community","Photo and video rights for their marketing","Popo and WAS story for CSR storytelling"]),
+
+  s05_title: "Content Strategy",
+  s05_card1_label: "Primary", s05_card1_title: "Instagram", s05_card1_body: "Reels for reach, Stories for daily connection, carousels for education. The visual home of WAS.",
+  s05_card2_label: "Reach", s05_card2_title: "TikTok", s05_card2_body: "Short-form video for discovery. Inner Voice series, training clips, mountain POVs. Women 18–35.",
+  s05_card3_label: "Community", s05_card3_title: "Facebook", s05_card3_body: "Private group for active members. Events, training schedules, gear sharing.",
+  s05_frequency: JSON.stringify(["Instagram Feed: 3–4 posts/week","Stories: daily during season, 3–4×/week off-season","Reels: 2–3/week","TikTok: 3–5/week","Facebook Group: as needed"]),
+  s05_seasons: JSON.stringify([
+    { name: "Spring", sub: "Pre-Season", body: "Training prep. Registration. Fitness challenges. New member spotlights." },
+    { name: "Summer", sub: "Climbing Season", body: "Maximum output. Summit content. Daily stories. Real-time updates." },
+    { name: "Autumn", sub: "Post-Season", body: "Reflection. Recaps. Transformation stories. Sponsor outreach." },
+    { name: "Winter", sub: "Off-Season", body: "Community. Indoor training. Popo's teachings. Ski trip. Fundraising." },
+  ]),
+
+  s06_title: "Next Steps",
+  s06_decisions: JSON.stringify(["Language strategy: Georgian only, bilingual, or English-first?","Popo's role: public face, or featured but behind the scenes?","Content team: who films, edits, posts?","Legal: should WAS register as NGO for grant eligibility?","Photography: do we have someone for the ski trip?","Handle: confirm @WomensAlpineSchool across platforms."]),
+  s06_actions: JSON.stringify(["Set up Instagram and TikTok with consistent branding.","Gather 5–10 Inner Voice stories from WAS women.","Write and photograph Popo's origin story.","Research Georgian women alpinists for history series.","Create one-page brand guidelines.","Build a landing page.","Plan the ski touring trip content shoot.","Begin documenting everything."]),
+  s06_buildNext: JSON.stringify(["Visual identity system (templates from WAS logo colors)","Social media templates","Phase 1 launch content pack (2 weeks, ready to publish)","Sponsor deck (PDF, designed)","Landing page","Phase 2 and 3 deep dives"]),
+
+  closing_quote: "Nothing will work for you.",
+  closing_attrib: "— said everyone, before 35 women stood on the summit of Kazbegi.",
 };
 
-type Story = {
-  id: string;
-  story: string;
-  teamLabel: string;
-  leader: string;
-  status: "todo" | "progress" | "done";
-  deadline: string;
-};
+// ── Editable text component ─────────────────────────────────────────────────
 
-type Volunteer = {
-  id: string;
-  name: string;
-  skills: string;
-  hours: string;
-  team: string;
-};
+function E({ k, className }: { k: string; className?: string }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const ref = useRef<HTMLDivElement>(null);
+  const val = d[k] ?? DEFAULTS[k] ?? "";
 
-type Phase1Data = {
-  header: { emoji: string; title: string; subtitle: string };
-  props: {
-    status: string;
-    startDate: string;
-    endDate: string;
-    owner: string;
-    teamsCount: string;
-    targetSponsors: string;
-  };
-  callout: string;
-  goals: Goal[];
-  teams: Team[];
-  stories: Story[];
-  sync: { reports: string[]; rules: string[] };
-  volunteers: Volunteer[];
-};
+  useEffect(() => {
+    if (ref.current && ref.current.textContent !== val) ref.current.textContent = val;
+  }, [val]);
 
-// ── default data ─────────────────────────────────────────────────────────────
-
-const DEFAULT_DATA: Phase1Data = {
-  header: {
-    emoji: "🏔️",
-    title: "SPA Project kickoff \nმარ–აპრ 2026",
-    subtitle: "დრო: 4 კვირა · 3 პარალელური გუნდი · 25+ მოხალისე",
-  },
-  props: {
-    status: "🟢 მიმდინარე",
-    startDate: "მარ 10, 2026",
-    endDate: "აპრ 7, 2026",
-    owner: "ფოფო",
-    teamsCount: "3 გუნდი",
-    targetSponsors: "5 კომპანია",
-  },
-  callout:
-    "ყველა 3 გუნდი მუშაობს პარალელურად, რათა ბრენდინგი → კონტენტი → აუთრიჩი → ავტომატიზაცია მოხდეს ერთდროულად. ყოველ კვირას 30 წთ-იანი სინქი.",
-  goals: [
-    { id: "g1", icon: "🚀 დავიწყოთ პროექტზე მუშაობა ", text: "დავიწყოთ პროექტზე მუშაობა" },
-    { id: "g2", icon: "🤝 ვიპოვოთ 5 კომპანია ღირებულებების შესაბამისად", text: "ვიპოვოთ 5 კომპანია ღირებულებების შესაბამისად" },
-    { id: "g3", icon: "📅წინასწარ შევქმნათ 1 თვის კონტენტი", text: "წინასწარ შევქმნათ 1 თვის კონტენტი" },
-    { id: "g4", icon: "📱📱 დავიწყოთ სოც. ქსელებში აქტიურობა", text: "დავიწყოთ სოც. ქსელებში აქტიურობა" },
-  ],
-  teams: [
-    {
-      id: "marine",
-      emoji: "🏔️ ფბ ",
-      name: 'გუნდი "მარინე"',
-      role: "ბრენდინგი",
-      color: "#2d5a3d",
-      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
-      tasks: [
-        "ბრენდის ღირებულებების განსაზღვრა (3–5)",
-        "მოკლე ბრენდის დოკუმენტი (1 გვერდი)",
-        "სოც. მედიის ვიზუალური სტილი",
-        "3 პოსტის შაბლონი",
-      ],
-      leader: "👑 ლიდერი",
-      members: ["სოფია ჩ.", "ნანუკა ქ.", "ნატა ქ.", "მეგი ჩ.", "ანა ჩ."],
-    },
-    {
-      id: "aleksandra",
-      emoji: "⛰️ ინსტა",
-      name: 'გუნდი "ალექსანდრა"',
-      role: "სპონსორები & გრანტები",
-      color: "#5a3d2d",
-      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
-      tasks: [
-        "20 კანდიდატ-კომპანიის სია",
-        "ტოპ 5 შორტლისტი კამპანიების მიხედვით",
-        "აუთრიჩის პაკეტი + ფოლოუაფები",
-        "ლოკ. & საერთ. გრანტების კვლევა",
-      ],
-      leader: "👑 ლიდერი",
-      members: ["მარიამ შ.", "ლელი ქ.", "თამარი კ.", "მარიამ გ.", "ნიცა ღ."],
-    },
-    {
-      id: "lamara",
-      emoji: "📸 ტიკტოკი",
-      name: 'გუნდი "ლამარა"',
-      role: "სოც. მედია & კონტენტი",
-      color: "#2d3d5a",
-      alpinist: "მიზანი -თვის ბოლოს გვყავდეს 2K ფოლოუერი",
-      tasks: [
-        "1 თვის კონტენტ კალენდარი",
-        "LinkedIn (აუცილებელი), Instagram, TikTok",
-        "გადაღებების დაგეგმვა",
-        "თანამშრომლობა ბრენდინგ გუნდთან",
-      ],
-      leader: "👑 ლიდი - სახელი ",
-      members: ["მარიამ მ.", "თამთა ტ.", "ანი ყ.", "მარი ზ.", "ანა კ."],
-    },
-    {
-      id: "nino",
-      emoji: "⚙️ ტექი",
-      name: 'გუნდი "ნინო"',
-      role: "ტექნიკა & ავტომატიზაცია",
-      color: "#4a2d5a",
-      alpinist: "პოსტების დადება განთავსება  მაქსიმალიურად გამარტივდეს",
-      tasks: [
-        "Buffer / Later-ის სქედიულინგის დაყენება",
-        "სასპონსორო კიტის გენერატორი",
-        "1 თვის პოსტების სქედიულინგი",
-        "ყოველკვირეული რეპორტინგი",
-      ],
-      leader: "👑 ლიდი - სახელი ",
-      members: ["ელენე დ.", "ანი ბ.", "ნინო სნ.", "სალომე კ.", "ეკა ა."],
-    },
-    {
-      id: "maia",
-      emoji: "🧭 ბრენდინგი",
-      name: 'გუნდი "მაია"',
-      role: "გასვლები & ტრენინგები",
-      color: "#5a4a2d",
-      alpinist: " მიზანი -გვქონდეს ვიზუალური ინდეტობა ",
-      tasks: [
-        "ბრენდის ღირებულებების განსაზღვრა (3–5)",
-        "მოკლე ბრენდის დოკუმენტი (1 გვერდი)",
-        "ყოველ აქტივობას — კონტენტის გეგმა",
-        "სოც. მედიის ვიზუალური სტილი",
-      ],
-      leader: "👑  ლიდი - სახელი ",
-      members: ["მარიამ ლ.", "ანა ჩანგ.", "თამარ გ.", "სალომე ც.", "ანი ზ."],
-      fullWidth: true,
-    },
-  ],
-  stories: [
-    { id: "s1", story: "ბრენდის ღირებულებების განსაზღვრა", teamLabel: "მარინე", leader: "ვაკანტური — 🙋 მოხალისე?", status: "todo", deadline: "კვ. 1" },
-    { id: "s2", story: "20 კომპანიის სიის შედგენა", teamLabel: "ალექსანდრა", leader: "ვაკანტური — 🙋 მოხალისე?", status: "todo", deadline: "კვ. 1" },
-    { id: "s3", story: "სოც. მედია კალენდარი (აპრილი)", teamLabel: "ლამარა", leader: "ვაკანტური — 🙋 მოხალისე?", status: "todo", deadline: "კვ. 2" },
-    { id: "s4", story: "Buffer-ის სქედიულინგის დაყენება", teamLabel: "ნინო", leader: "ვაკანტური — 🙋 მოხალისე?", status: "todo", deadline: "კვ. 1" },
-    { id: "s5", story: "პირველი სრიალის გასვლა", teamLabel: "მაია", leader: "ვაკანტური — 🙋 მოხალისე?", status: "todo", deadline: "კვ. 2" },
-  ],
-  sync: {
-    reports: [
-      "რა დასრულდა ამ კვირაში",
-      "რა ბლოკავს პროგრესს",
-      "შემდეგი კვირის პრიორიტეტები",
-      "ვის / რა სჭირდება დახმარება",
-      "",
-    ],
-    rules: [
-      "ყველა კითხვა იკვრება ფოფოსთან",
-      "გუნდებს შორის კომუნიკაცია — Notion-ში",
-      "ლიდერი ირჩევა ყოველ სტორიზე ახლიდან",
-      "ნებისმიერს შეუძლია მოხალისეობა",
-    ],
-  },
-  volunteers: [
-    { id: "v1",  name: "მარიამ მათიაშვილი",  skills: "სოც.მედია, ფოტო/ვიდეო",    hours: "3–5 სთ",   team: "ლამარა" },
-    { id: "v2",  name: "სოფია ჩოხელი",        skills: "დიზაინი, ფოტო/ვიდეო",     hours: "3–5 სთ",   team: "მარინე" },
-    { id: "v3",  name: "მარი ზედგინიძე",       skills: "სოც.მედია",               hours: "1–2 სთ",   team: "ლამარა" },
-    { id: "v4",  name: "ნანუკა ქეშელაშვილი",   skills: "დიზაინი, ფოტო/ვიდეო",     hours: "ხანდახან", team: "მარინე" },
-    { id: "v5",  name: "ელენე დონაძე",          skills: "ვებ / PM",                hours: "3–5 სთ",   team: "ნინო" },
-    { id: "v6",  name: "მარიამ ლომიძე",         skills: "სოც.მედია, ფოტო/ვიდეო",   hours: "3–5 სთ",   team: "მაია" },
-    { id: "v7",  name: "ნინო სნჯოიანი",         skills: "სოც.მედია, ფოტო/ვიდეო",   hours: "3–5 სთ",   team: "ნინო" },
-    { id: "v8",  name: "ანა კეკუა",             skills: "სოც.მედია, ლოჯისტიკა",    hours: "3–5 სთ",   team: "ლამარა" },
-    { id: "v9",  name: "ლელი ქურასბედიანი",     skills: "სოც.მედია, სპონს.",       hours: "ხანდახან", team: "ალექსანდრა" },
-    { id: "v10", name: "მარიამ შათირიშვილი",    skills: "სპონს., ლოჯისტ.",         hours: "3–5 სთ",   team: "ალექსანდრა" },
-    { id: "v11", name: "ნატა ქავთარაძე",        skills: "დიზაინი, ფოტო/ვიდეო",     hours: "ხანდახან", team: "მარინე" },
-    { id: "v12", name: "ანი ზანკალიანი",         skills: "დიზაინი, ლოჯისტ.",        hours: "ხანდახან", team: "მაია" },
-    { id: "v13", name: "თამთა ტრაპაიძე",        skills: "სოც.მედია, ფოტო/ვიდეო",   hours: "3–5 სთ",   team: "ლამარა" },
-    { id: "v14", name: "ანი ყავლაშვილი",        skills: "სოც.მედია, ფოტო/ვიდეო",   hours: "3–5 სთ",   team: "ლამარა" },
-    { id: "v15", name: "თამარი კაპანაძე",       skills: "სოც.მედია, სპონს.",        hours: "3–5 სთ",   team: "ალექსანდრა" },
-    { id: "v16", name: "ნიცა ღლონტი",           skills: "IT PM, ლოჯისტ.",          hours: "1–2 სთ",   team: "ალექსანდრა" },
-    { id: "v17", name: "სალომე კაჭკაჭაშვილი",   skills: "ფოტო/ვიდეო, ლოჯისტ.",    hours: "3–5 სთ",   team: "ნინო" },
-    { id: "v18", name: "ეკა ავსაჯანიშვილი",     skills: "PM",                      hours: "სხვა",     team: "ნინო" },
-    { id: "v19", name: "ანა ჩანგიანი",          skills: "ფოტო/ვიდეო",             hours: "1–2 სთ",   team: "მაია" },
-    { id: "v20", name: "მეგი ჩუბინიძე",         skills: "დიზაინი, სოც.მედია",      hours: "ხანდახან", team: "მარინე" },
-    { id: "v21", name: "მარიამ გიორგაძე",       skills: "სოც.მედია, სპონს.",        hours: "3–5 სთ",   team: "ალექსანდრა" },
-    { id: "v22", name: "თამარ გელაშვილი",       skills: "ფოტო/ვიდეო",             hours: "3–5 სთ",   team: "მაია" },
-    { id: "v23", name: "ანი ბერუაშვილი",        skills: "Frontend Dev",            hours: "3–5 სთ",   team: "ნინო" },
-    { id: "v24", name: "ანა ჩუბინიძე",          skills: "დიზაინი, Android Dev",    hours: "3–5 სთ",   team: "მარინე" },
-    { id: "v25", name: "სალომე ცისკაძე",        skills: "ფოტო/ვიდეო",             hours: "1–2 სთ",   team: "მაია" },
-  ],
-};
-
-// ── shared helpers ───────────────────────────────────────────────────────────
-
-function uid() {
-  return Math.random().toString(36).slice(2);
-}
-
-const editableCls =
-  "bg-transparent outline-none w-full min-w-0 border-b border-transparent " +
-  "hover:border-[#e8e3db] focus:border-[#2d5a3d] transition-colors placeholder:text-[#c5b8aa]";
-
-function EI({
-  value,
-  onChange,
-  className,
-  placeholder,
-  style,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  className?: string;
-  placeholder?: string;
-  style?: React.CSSProperties;
-}) {
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder ?? "…"}
-      className={`${editableCls} ${className ?? ""}`}
-      style={style}
+    <span
+      ref={ref as any}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={() => { const t = ref.current?.textContent ?? ""; if (t !== val) set(k, t); }}
+      className={`outline-none cursor-text rounded-sm transition-shadow hover:ring-1 hover:ring-[#409090]/25 focus:ring-1 focus:ring-[#409090]/50 focus:bg-[#132840]/50 ${className ?? ""}`}
     />
   );
 }
 
-function EA({
-  value,
-  onChange,
-  className,
-  placeholder,
-  style,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  className?: string;
-  placeholder?: string;
-  style?: React.CSSProperties;
-}) {
-  const ref = React.useRef<HTMLTextAreaElement>(null);
-  React.useLayoutEffect(() => {
-    if (!ref.current) return;
-    ref.current.style.height = "auto";
-    ref.current.style.height = `${ref.current.scrollHeight}px`;
-  }, [value]);
+function EBlock({ k, className }: { k: string; className?: string }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const ref = useRef<HTMLDivElement>(null);
+  const val = d[k] ?? DEFAULTS[k] ?? "";
+
+  useEffect(() => {
+    if (ref.current && ref.current.innerText !== val) ref.current.innerText = val;
+  }, [val]);
+
   return (
-    <textarea
+    <div
       ref={ref}
-      rows={1}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder ?? "…"}
-      className={`${editableCls} resize-none overflow-hidden ${className ?? ""}`}
-      style={style}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={() => { const t = ref.current?.innerText ?? ""; if (t !== val) set(k, t); }}
+      className={`outline-none cursor-text rounded-sm transition-shadow hover:ring-1 hover:ring-[#409090]/25 focus:ring-1 focus:ring-[#409090]/50 focus:bg-[#132840]/50 ${className ?? ""}`}
     />
   );
 }
 
-// ── status helpers ───────────────────────────────────────────────────────────
+// ── Editable list (JSON array of strings) ───────────────────────────────────
 
-const STATUS_LABELS: Record<Story["status"], string> = {
-  todo: "დასაწყები",
-  progress: "მიმდინარე",
-  done: "დასრულებული",
-};
-const STATUS_CLS: Record<Story["status"], string> = {
-  todo: "bg-[#f0f0f0] text-[#666]",
-  progress: "bg-[#fff3cd] text-[#856404]",
-  done: "bg-[#e8f0eb] text-[#2d5a3d]",
-};
+function EList({ k, render }: { k: string; render: (items: string[], onChange: (i: number, v: string) => void, onRemove: (i: number) => void, onAdd: () => void) => ReactNode }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const raw = d[k] ?? DEFAULTS[k] ?? "[]";
+  let items: string[];
+  try { items = JSON.parse(raw); } catch { items = []; }
 
-// ── main component ───────────────────────────────────────────────────────────
+  const onChange = (i: number, v: string) => { const next = [...items]; next[i] = v; set(k, JSON.stringify(next)); };
+  const onRemove = (i: number) => { set(k, JSON.stringify(items.filter((_, idx) => idx !== i))); };
+  const onAdd = () => { set(k, JSON.stringify([...items, "New item"])); };
 
-export default function Phase1() {
-  const [data, setData] = React.useState<Phase1Data>(() => {
-    try {
-      const raw = localStorage.getItem(PHASE1_KEY);
-      if (raw) return { ...DEFAULT_DATA, ...(JSON.parse(raw) as Partial<Phase1Data>) };
-    } catch { /* ignore */ }
-    return DEFAULT_DATA;
-  });
+  return <>{render(items, onChange, onRemove, onAdd)}</>;
+}
 
-  const [saved, setSaved] = React.useState(false);
+// ── Editable labeled items (JSON array of {label, desc}) ────────────────────
 
-  // Load from remote on mount; remote wins over localStorage
-  React.useEffect(() => {
-    fetch(`/api/phase1-draft?draftId=${PHASE1_DRAFT_ID}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null)
-      .then((res: { ok: boolean; found: boolean; data?: Phase1Data } | null) => {
-        if (res?.ok && res.found && res.data) {
-          setData((local) => ({ ...local, ...res.data }));
-        }
-      });
-  }, []);
+function ELabeledList({ k }: { k: string }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const raw = d[k] ?? DEFAULTS[k] ?? "[]";
+  let items: Array<{ label: string; desc: string }>;
+  try { items = JSON.parse(raw); } catch { items = []; }
 
-  async function save() {
-    try {
-      localStorage.setItem(PHASE1_KEY, JSON.stringify(data));
-      await fetch("/api/phase1-draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draftId: PHASE1_DRAFT_ID, data }),
-      }).catch(() => {}); // ignore network errors; localStorage save already succeeded
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch { /* ignore */ }
-  }
-
-  // ── updaters ────────────────────────────────────────────────────────────
-
-  function upHeader(k: keyof Phase1Data["header"], v: string) {
-    setData((d) => ({ ...d, header: { ...d.header, [k]: v } }));
-  }
-  function upProp(k: keyof Phase1Data["props"], v: string) {
-    setData((d) => ({ ...d, props: { ...d.props, [k]: v } }));
-  }
-  function upCallout(v: string) {
-    setData((d) => ({ ...d, callout: v }));
-  }
-  function upGoal(i: number, k: keyof Goal, v: string) {
-    setData((d) => {
-      const goals = [...d.goals];
-      goals[i] = { ...goals[i], [k]: v };
-      return { ...d, goals };
-    });
-  }
-  function addGoal() {
-    setData((d) => ({ ...d, goals: [...d.goals, { id: uid(), icon: "🎯", text: "" }] }));
-  }
-  function removeGoal(i: number) {
-    setData((d) => ({ ...d, goals: d.goals.filter((_, idx) => idx !== i) }));
-  }
-  function upTeam(id: string, k: keyof Team, v: string) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => (t.id === id ? { ...t, [k]: v } : t)),
-    }));
-  }
-  function upTeamTask(id: string, ti: number, v: string) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => {
-        if (t.id !== id) return t;
-        const tasks = [...t.tasks];
-        tasks[ti] = v;
-        return { ...t, tasks };
-      }),
-    }));
-  }
-  function addTeamTask(id: string) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => (t.id === id ? { ...t, tasks: [...t.tasks, ""] } : t)),
-    }));
-  }
-  function removeTeamTask(id: string, ti: number) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => {
-        if (t.id !== id) return t;
-        return { ...t, tasks: t.tasks.filter((_, i) => i !== ti) };
-      }),
-    }));
-  }
-  function upTeamMember(id: string, mi: number, v: string) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => {
-        if (t.id !== id) return t;
-        const members = [...t.members];
-        members[mi] = v;
-        return { ...t, members };
-      }),
-    }));
-  }
-  function addTeamMember(id: string) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => (t.id === id ? { ...t, members: [...t.members, ""] } : t)),
-    }));
-  }
-  function removeTeamMember(id: string, mi: number) {
-    setData((d) => ({
-      ...d,
-      teams: d.teams.map((t) => {
-        if (t.id !== id) return t;
-        return { ...t, members: t.members.filter((_, i) => i !== mi) };
-      }),
-    }));
-  }
-  function upStory(id: string, k: keyof Story, v: string) {
-    setData((d) => ({
-      ...d,
-      stories: d.stories.map((s) => (s.id === id ? { ...s, [k]: v } : s)),
-    }));
-  }
-  function addStory() {
-    setData((d) => ({
-      ...d,
-      stories: [...d.stories, { id: uid(), story: "", teamLabel: "", leader: "", status: "todo", deadline: "" }],
-    }));
-  }
-  function removeStory(id: string) {
-    setData((d) => ({ ...d, stories: d.stories.filter((s) => s.id !== id) }));
-  }
-  function upSync(col: "reports" | "rules", i: number, v: string) {
-    setData((d) => {
-      const arr = [...d.sync[col]];
-      arr[i] = v;
-      return { ...d, sync: { ...d.sync, [col]: arr } };
-    });
-  }
-  function addSync(col: "reports" | "rules") {
-    setData((d) => ({ ...d, sync: { ...d.sync, [col]: [...d.sync[col], ""] } }));
-  }
-  function removeSync(col: "reports" | "rules", i: number) {
-    setData((d) => ({ ...d, sync: { ...d.sync, [col]: d.sync[col].filter((_, idx) => idx !== i) } }));
-  }
-  function upVolunteer(id: string, k: keyof Volunteer, v: string) {
-    setData((d) => ({
-      ...d,
-      volunteers: d.volunteers.map((v2) => (v2.id === id ? { ...v2, [k]: v } : v2)),
-    }));
-  }
-  function addVolunteer() {
-    setData((d) => ({
-      ...d,
-      volunteers: [...d.volunteers, { id: uid(), name: "", skills: "", hours: "", team: "" }],
-    }));
-  }
-  function removeVolunteer(id: string) {
-    setData((d) => ({ ...d, volunteers: d.volunteers.filter((v) => v.id !== id) }));
-  }
-
-  // ── render ───────────────────────────────────────────────────────────────
+  const update = (i: number, field: "label" | "desc", v: string) => {
+    const next = items.map((item, idx) => idx === i ? { ...item, [field]: v } : item);
+    set(k, JSON.stringify(next));
+  };
+  const remove = (i: number) => set(k, JSON.stringify(items.filter((_, idx) => idx !== i)));
+  const add = () => set(k, JSON.stringify([...items, { label: "New Label", desc: "Description" }]));
 
   return (
-    <div className="flex min-h-screen bg-[#faf8f5] text-[#1a1814]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-
-      {/* ── Sidebar ── */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-60 overflow-y-auto border-r border-[#e8e3db] bg-white lg:block">
-        <div className="p-4 pb-5 border-b border-[#e8e3db]" style={{ fontFamily: "'Playfair Display', serif" }}>
-          <div className="text-xs font-bold uppercase tracking-widest text-[#2d5a3d]">🏔️ ქალთა ალპური სკოლა</div>
-        </div>
-
-        <div className="p-3">
-          <div className="px-2 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">მთავარი</div>
-          <a href="#overview" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#1a1814] hover:bg-[#f0f4f1] font-medium">📋 სპონსორობის გეგმა</a>
-          <a href="#teams"    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#6b6459] hover:bg-[#f0f4f1]">👥 გუნდები</a>
-          <a href="#stories"  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#6b6459] hover:bg-[#f0f4f1]">📖 სტორები</a>
-          <a href="#volunteers" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#6b6459] hover:bg-[#f0f4f1]">🙋 მოხალისეები</a>
-
-          <div className="px-2 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">გუნდები</div>
-          {data.teams.map((t) => (
-            <a key={t.id} href={`#team-${t.id}`} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#6b6459] hover:bg-[#f0f4f1]">
-              <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: t.color }} />
-              {t.name}
-            </a>
-          ))}
-
-          <div className="px-2 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">სხვა გვერდები</div>
-          <Link to="/" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[#6b6459] hover:bg-[#f0f4f1]">
-            📋 SP გენერატორი →
-          </Link>
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <main className="flex-1 lg:ml-60 px-5 py-10 lg:px-16 lg:py-12 max-w-5xl">
-
-        {/* Save bar */}
-        <div className="mb-8 flex items-center justify-between">
-          <Link to="/" className="text-sm text-[#6b6459] hover:text-[#2d5a3d] transition-colors lg:hidden">
-            ← SP გენერატორი
-          </Link>
-          <div className="ml-auto flex items-center gap-3">
-            {saved && (
-              <span className="flex items-center gap-1.5 text-sm text-[#2d5a3d]">
-                <CheckCircle2 className="h-4 w-4" /> შენახულია
-              </span>
-            )}
-            <button
-              onClick={save}
-              className="flex items-center gap-2 rounded-lg bg-[#2d5a3d] px-4 py-2 text-sm font-medium text-white hover:bg-[#245030] transition-colors"
-            >
-              <Save className="h-4 w-4" />
-              შენახვა
-            </button>
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className="reveal group border-l-2 border-[#1a3250] py-3 pl-5 transition-colors hover:border-[#409090]">
+          <div className="flex items-start justify-between">
+            <EditInline value={item.label} onChange={(v) => update(i, "label", v)} className="mb-1 text-[15px] font-medium text-[#50b8b0]" />
+            <button onClick={() => remove(i)} className="ml-2 text-[#4a6070] opacity-0 transition-opacity group-hover:opacity-100 hover:text-[#d06060] text-xs">×</button>
           </div>
+          <EditInline value={item.desc} onChange={(v) => update(i, "desc", v)} className="text-[15px] leading-relaxed text-[#7a90a8]" />
         </div>
-
-        {/* ── Page Header ── */}
-        <div id="overview" className="mb-8 border-b border-[#e8e3db] pb-8">
-          <div className="mb-3 text-5xl">
-            <EI value={data.header.emoji} onChange={(v) => upHeader("emoji", v)} className="w-16 text-5xl" />
-          </div>
-          <EA
-            value={data.header.title}
-            onChange={(v) => upHeader("title", v)}
-            className="mb-2 w-full text-3xl font-bold leading-tight text-[#1a1814] lg:text-4xl"
-            style={{ fontFamily: "'Playfair Display', serif" } as React.CSSProperties}
-          />
-          <EI
-            value={data.header.subtitle}
-            onChange={(v) => upHeader("subtitle", v)}
-            className="mb-5 text-base text-[#6b6459]"
-          />
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f0eb] px-3 py-1 text-xs font-medium text-[#2d5a3d]">✅ აქტიური</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#fdf3e1] px-3 py-1 text-xs font-medium text-[#c4973a]">📅 მარ–აპრ 2026</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8edf5] px-3 py-1 text-xs font-medium text-[#2d3d5a]">👥 25 მოხალისე</span>
-          </div>
-        </div>
-
-        {/* ── Properties ── */}
-        <div className="mb-8 grid grid-cols-2 gap-4 rounded-xl border border-[#e8e3db] bg-white p-5 sm:grid-cols-3">
-          {(
-            [
-              ["status", "სტატუსი"],
-              ["startDate", "დასაწყისი"],
-              ["endDate", "დასასრული"],
-              ["owner", "პასუხისმგებელი"],
-              ["teamsCount", "გუნდები"],
-              ["targetSponsors", "მიზნობრივი სპონსორები"],
-            ] as [keyof Phase1Data["props"], string][]
-          ).map(([k, label]) => (
-            <div key={k} className="flex flex-col gap-1">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">{label}</span>
-              <EI value={data.props[k]} onChange={(v) => upProp(k, v)} className="text-sm font-medium" />
-            </div>
-          ))}
-        </div>
-
-        {/* ── Callout ── */}
-        <div className="mb-8 flex items-start gap-3 rounded-xl border border-[#c5ddc9] bg-[#e8f0eb] px-5 py-4 text-[#2d5a3d]">
-          <span className="mt-0.5 flex-shrink-0 text-lg">💡</span>
-          <EA value={data.callout} onChange={upCallout} className="text-sm text-[#2d5a3d]" />
-        </div>
-
-        {/* ── Goals ── */}
-        <SectionHeading emoji="🎯" title="მიზნები" />
-        <div className="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {data.goals.map((g, i) => (
-            <div key={g.id} className="group flex items-center gap-2 rounded-lg border border-[#e8e3db] bg-white px-3 py-2 hover:shadow-sm transition-shadow">
-              <EI value={g.icon} onChange={(v) => upGoal(i, "icon", v)} className="w-7 shrink-0 text-base" />
-              <EI value={g.text} onChange={(v) => upGoal(i, "text", v)} className="flex-1 text-sm" />
-              <button onClick={() => removeGoal(i)} className="hidden shrink-0 text-[#6b6459] hover:text-rose-500 group-hover:block">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-        <button onClick={addGoal} className="mb-8 flex items-center gap-1.5 text-sm text-[#6b6459] hover:text-[#2d5a3d]">
-          <Plus className="h-4 w-4" /> მიზნის დამატება
-        </button>
-
-        <Divider />
-
-        {/* ── Teams ── */}
-        <SectionHeading emoji="👥" title="გუნდები" id="teams" />
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {data.teams.map((team) => (
-            <div key={team.id} id={`team-${team.id}`} className={`rounded-xl border border-[#e8e3db] bg-white overflow-hidden hover:shadow-md transition-shadow ${team.fullWidth ? "md:col-span-2" : ""}`}>
-              {/* team header */}
-              <div className="flex items-center gap-3 px-5 py-4" style={{ background: team.color }}>
-                <EI value={team.emoji} onChange={(v) => upTeam(team.id, "emoji", v)} className="w-9 text-2xl text-white border-white/30" />
-                <div className="min-w-0 flex-1">
-                  <EI value={team.name} onChange={(v) => upTeam(team.id, "name", v)} className="font-semibold text-white text-base border-white/30" style={{ fontFamily: "'Playfair Display', serif" } as React.CSSProperties} />
-                  <EI value={team.role} onChange={(v) => upTeam(team.id, "role", v)} className="mt-0.5 text-xs text-white/75 border-white/20" />
-                </div>
-              </div>
-
-              {/* team body */}
-              <div className="p-5">
-                <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">
-                  <span className="h-px w-4 bg-[#e8e3db]" />
-                  <EI value={team.alpinist} onChange={(v) => upTeam(team.id, "alpinist", v)} className="flex-1 text-[10px] uppercase tracking-widest" />
-                </div>
-
-                {/* tasks */}
-                <ul className="mb-4 space-y-1">
-                  {team.tasks.map((task, ti) => (
-                    <li key={ti} className="group flex items-center gap-2 border-b border-[#e8e3db] py-1.5 last:border-0">
-                      <span className="shrink-0 text-[10px] text-[#6b6459]">◻</span>
-                      <EI value={task} onChange={(v) => upTeamTask(team.id, ti, v)} className="flex-1 text-sm text-[#6b6459]" />
-                      <button onClick={() => removeTeamTask(team.id, ti)} className="hidden shrink-0 text-[#6b6459] hover:text-rose-500 group-hover:block">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <button onClick={() => addTeamTask(team.id)} className="mb-4 flex items-center gap-1 text-xs text-[#6b6459] hover:text-[#2d5a3d]">
-                  <Plus className="h-3 w-3" /> დავალების დამატება
-                </button>
-
-                {/* members */}
-                <div className="border-t border-[#e8e3db] pt-3">
-                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">წევრები</div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-[#2d5a3d] bg-[#e8f0eb] px-3 py-1 text-xs font-medium text-[#2d5a3d]">
-                      <EI value={team.leader} onChange={(v) => upTeam(team.id, "leader", v)} className="text-xs text-[#2d5a3d]" />
-                    </span>
-                    {team.members.map((m, mi) => (
-                      <span key={mi} className="group flex items-center gap-1 rounded-full border border-[#e8e3db] bg-[#f0f4f1] px-3 py-1 text-xs">
-                        <EI value={m} onChange={(v) => upTeamMember(team.id, mi, v)} className="text-xs w-20" />
-                        <button onClick={() => removeTeamMember(team.id, mi)} className="hidden text-[#6b6459] hover:text-rose-500 group-hover:block">
-                          <X className="h-2.5 w-2.5" />
-                        </button>
-                      </span>
-                    ))}
-                    <button onClick={() => addTeamMember(team.id)} className="rounded-full border border-dashed border-[#e8e3db] px-3 py-1 text-xs text-[#6b6459] hover:border-[#2d5a3d] hover:text-[#2d5a3d]">
-                      + წევრი
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <Divider />
-
-        {/* ── Story Tracker ── */}
-        <SectionHeading emoji="📖" title="სტორი ტრეკერი" id="stories" />
-        <div className="mb-6 overflow-hidden rounded-xl border border-[#e8e3db] bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#e8e3db] bg-[#f0f4f1]">
-                {["სტორი", "გუნდი", "ლიდერი", "სტატუსი", "ვადა", ""].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.stories.map((s) => (
-                <tr key={s.id} className="group border-b border-[#e8e3db] last:border-0 hover:bg-[#f0f4f1] transition-colors">
-                  <td className="px-4 py-3"><EI value={s.story} onChange={(v) => upStory(s.id, "story", v)} /></td>
-                  <td className="px-4 py-3"><EI value={s.teamLabel} onChange={(v) => upStory(s.id, "teamLabel", v)} className="w-24" /></td>
-                  <td className="px-4 py-3"><EI value={s.leader} onChange={(v) => upStory(s.id, "leader", v)} /></td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={s.status}
-                      onChange={(e) => upStory(s.id, "status", e.target.value)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium outline-none cursor-pointer ${STATUS_CLS[s.status]}`}
-                    >
-                      {(Object.entries(STATUS_LABELS) as [Story["status"], string][]).map(([v, l]) => (
-                        <option key={v} value={v}>{l}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3"><EI value={s.deadline} onChange={(v) => upStory(s.id, "deadline", v)} className="w-16" /></td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => removeStory(s.id)} className="hidden text-[#6b6459] hover:text-rose-500 group-hover:block">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button onClick={addStory} className="mb-8 flex items-center gap-1.5 text-sm text-[#6b6459] hover:text-[#2d5a3d]">
-          <Plus className="h-4 w-4" /> სტორის დამატება
-        </button>
-
-        <Divider />
-
-        {/* ── Weekly Sync ── */}
-        <SectionHeading emoji="🔄" title="ყოველკვირეული სინქი (30 წთ)" />
-        <div className="mb-8 grid grid-cols-1 gap-6 rounded-xl border border-[#e8e3db] bg-white p-6 sm:grid-cols-2">
-          {(["reports", "rules"] as const).map((col) => (
-            <div key={col}>
-              <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#1a1814]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                {col === "reports" ? "📋 ყოველი გუნდი აცნობებს" : "❓ Q&A წესები"}
-              </h4>
-              {data.sync[col].map((item, i) => (
-                <div key={i} className="group flex items-center gap-3 border-b border-[#e8e3db] py-2 last:border-0">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e8f0eb] text-[10px] font-bold text-[#2d5a3d]">
-                    {col === "rules" ? "✓" : i + 1}
-                  </span>
-                  <EI value={item} onChange={(v) => upSync(col, i, v)} className="flex-1 text-sm text-[#1a1814]" />
-                  <button onClick={() => removeSync(col, i)} className="hidden shrink-0 text-[#6b6459] hover:text-rose-500 group-hover:block">
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              <button onClick={() => addSync(col)} className="mt-2 flex items-center gap-1 text-xs text-[#6b6459] hover:text-[#2d5a3d]">
-                <Plus className="h-3 w-3" /> დამატება
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <Divider />
-
-        {/* ── Volunteers ── */}
-        <SectionHeading emoji="🙋" title="მოხალისეები" id="volunteers" />
-        <div className="mb-6 overflow-hidden rounded-xl border border-[#e8e3db] bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#e8e3db] bg-[#f0f4f1]">
-                {["სახელი", "სფეროები", "დრო კვირაში", "გუნდი", ""].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-widest text-[#6b6459]">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.volunteers.map((v) => (
-                <tr key={v.id} className="group border-b border-[#e8e3db] last:border-0 hover:bg-[#f0f4f1] transition-colors">
-                  <td className="px-4 py-2.5"><EI value={v.name} onChange={(val) => upVolunteer(v.id, "name", val)} /></td>
-                  <td className="px-4 py-2.5"><EI value={v.skills} onChange={(val) => upVolunteer(v.id, "skills", val)} className="text-[#6b6459]" /></td>
-                  <td className="px-4 py-2.5"><EI value={v.hours} onChange={(val) => upVolunteer(v.id, "hours", val)} className="w-24" /></td>
-                  <td className="px-4 py-2.5"><EI value={v.team} onChange={(val) => upVolunteer(v.id, "team", val)} className="w-28" /></td>
-                  <td className="px-4 py-2.5">
-                    <button onClick={() => removeVolunteer(v.id)} className="hidden text-[#6b6459] hover:text-rose-500 group-hover:block">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button onClick={addVolunteer} className="mb-16 flex items-center gap-1.5 text-sm text-[#6b6459] hover:text-[#2d5a3d]">
-          <Plus className="h-4 w-4" /> მოხალისის დამატება
-        </button>
-      </main>
+      ))}
+      <button onClick={add} className="mt-2 font-mono text-[10px] tracking-[0.2em] text-[#409090] hover:text-[#50b8b0] transition-colors">+ ADD ITEM</button>
     </div>
   );
 }
 
-// ── small shared UI pieces ────────────────────────────────────────────────────
+// ── Generic inline editable (for array items) ───────────────────────────────
 
-function SectionHeading({ emoji, title, id }: { emoji: string; title: string; id?: string }) {
+function EditInline({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ref.current && ref.current.textContent !== value) ref.current.textContent = value;
+  }, [value]);
   return (
-    <h2
-      id={id}
-      className="mb-4 mt-8 flex items-center gap-2.5 text-xl font-semibold text-[#1a1814] after:ml-2 after:h-px after:flex-1 after:bg-[#e8e3db]"
-      style={{ fontFamily: "'Playfair Display', serif" }}
-    >
-      {emoji} {title}
-    </h2>
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={() => { const t = ref.current?.textContent ?? ""; if (t !== value) onChange(t); }}
+      className={`outline-none cursor-text rounded-sm transition-shadow hover:ring-1 hover:ring-[#409090]/25 focus:ring-1 focus:ring-[#409090]/50 focus:bg-[#132840]/50 ${className ?? ""}`}
+    />
   );
 }
 
-function Divider() {
-  return <hr className="my-8 border-t border-[#e8e3db]" />;
+// ── Scroll reveal ───────────────────────────────────────────────────────────
+
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const observe = useCallback(() => {
+    if (!ref.current) return;
+    const els = ref.current.querySelectorAll(".reveal");
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+  useEffect(observe, [observe]);
+  return ref;
+}
+
+// ── Layout primitives ───────────────────────────────────────────────────────
+
+const Divider = () => <div className="mx-auto h-px w-full" style={{ background: "linear-gradient(to right, transparent, #1a3250, transparent)" }} />;
+const Spacer = ({ h = 24 }: { h?: number }) => <div style={{ height: h }} />;
+const MetaLabel = ({ children }: { children: string }) => (
+  <div className="reveal mt-10 mb-3 border-t border-[#1a3250] pt-4 font-mono text-[10px] font-normal uppercase tracking-[0.4em] text-[#4a6070]">{children}</div>
+);
+const SectionLabel = ({ num }: { num: string }) => (
+  <div className="reveal font-mono text-[10px] tracking-[0.5em] text-[#409090]">{num}</div>
+);
+
+function ECard({ labelKey, titleKey, bodyKey, labelColor }: { labelKey: string; titleKey: string; bodyKey: string; labelColor: string }) {
+  return (
+    <div className="rounded-sm bg-[#132840] p-6 transition-colors hover:bg-[#1a3250]">
+      <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.4em]" style={{ color: labelColor }}><E k={labelKey} /></div>
+      <div className="mb-3 font-serif text-[1.15rem] text-[#edf0f5]"><E k={titleKey} /></div>
+      <div className="text-[14px] leading-relaxed text-[#7a90a8]"><E k={bodyKey} /></div>
+    </div>
+  );
+}
+
+function VoiceGroup({ label, k, color }: { label: string; k: string; color: string }) {
+  return (
+    <EList k={k} render={(items, onChange, onRemove, onAdd) => (
+      <div className="my-5 group/vg">
+        <div className="mb-2 pl-8 font-mono text-[9px] uppercase tracking-[0.4em] text-[#4a6070]">{label}</div>
+        {items.map((item, i) => (
+          <div key={i} className="reveal relative py-1.5 pl-8 pr-6 group font-serif text-[1.15rem] italic" style={{ color }}>
+            <span className="absolute left-0 top-1/2 h-px w-2 -translate-y-1/2 opacity-30" style={{ background: color }} />
+            &ldquo;<EditInline value={item} onChange={(v) => onChange(i, v)} className="inline" />&rdquo;
+            <button onClick={() => onRemove(i)} className="absolute right-0 top-1/2 -translate-y-1/2 text-[#4a6070] opacity-0 group-hover:opacity-100 hover:text-[#d06060] text-xs">×</button>
+          </div>
+        ))}
+        <button onClick={onAdd} className="ml-8 mt-1 font-mono text-[9px] tracking-[0.2em] text-[#409090] opacity-0 group-hover/vg:opacity-100 hover:text-[#50b8b0] transition-opacity">+ ADD</button>
+      </div>
+    )} />
+  );
+}
+
+function ECalendar({ k }: { k: string }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const raw = d[k] ?? DEFAULTS[k] ?? "[]";
+  let rows: Array<{ day: string; ig: string; tt: string; st: string }>;
+  try { rows = JSON.parse(raw); } catch { rows = []; }
+
+  const update = (i: number, field: string, v: string) => {
+    const next = rows.map((r, idx) => idx === i ? { ...r, [field]: v } : r);
+    set(k, JSON.stringify(next));
+  };
+  const remove = (i: number) => set(k, JSON.stringify(rows.filter((_, idx) => idx !== i)));
+  const add = () => set(k, JSON.stringify([...rows, { day: "—", ig: "—", tt: "—", st: "—" }]));
+
+  const dim = "text-[#4a6070]"; const normal = "text-[#b8c8d8]";
+  return (
+    <div className="reveal overflow-x-auto">
+      <table className="w-full border-collapse">
+        <thead><tr className="bg-[#1a3250]">
+          <th className="px-3 py-2.5 text-left font-mono text-[9px] uppercase tracking-[0.3em] text-[#50b8b0]">Day</th>
+          <th className="px-3 py-2.5 text-left font-mono text-[9px] uppercase tracking-[0.3em] text-[#50b8b0]">Instagram</th>
+          <th className="px-3 py-2.5 text-left font-mono text-[9px] uppercase tracking-[0.3em] text-[#50b8b0]">TikTok</th>
+          <th className="px-3 py-2.5 text-left font-mono text-[9px] uppercase tracking-[0.3em] text-[#50b8b0]">Stories</th>
+          <th className="w-6"></th>
+        </tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className={`group ${i % 2 === 0 ? "bg-[#132840]" : "bg-[#0e1e30]"}`}>
+              <td className="px-3 py-2.5 font-mono text-xs"><EditInline value={r.day} onChange={(v) => update(i, "day", v)} className={dim} /></td>
+              <td className="px-3 py-2.5 text-sm"><EditInline value={r.ig} onChange={(v) => update(i, "ig", v)} className={r.ig === "—" ? dim : normal} /></td>
+              <td className="px-3 py-2.5 text-sm"><EditInline value={r.tt} onChange={(v) => update(i, "tt", v)} className={r.tt === "—" ? dim : normal} /></td>
+              <td className="px-3 py-2.5 text-sm"><EditInline value={r.st} onChange={(v) => update(i, "st", v)} className={r.st === "—" ? dim : normal} /></td>
+              <td><button onClick={() => remove(i)} className="text-[#4a6070] opacity-0 group-hover:opacity-100 hover:text-[#d06060] text-xs">×</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={add} className="mt-2 font-mono text-[10px] tracking-[0.2em] text-[#409090] hover:text-[#50b8b0] transition-colors">+ ADD ROW</button>
+    </div>
+  );
+}
+
+function ESeasons({ k }: { k: string }) {
+  const { d, set } = useContext(Phase1Ctx);
+  const raw = d[k] ?? DEFAULTS[k] ?? "[]";
+  let items: Array<{ name: string; sub: string; body: string }>;
+  try { items = JSON.parse(raw); } catch { items = []; }
+  const accents = ["#50b8b0", "#edf0f5", "#d06060", "#d4a855"];
+
+  const update = (i: number, field: string, v: string) => {
+    const next = items.map((item, idx) => idx === i ? { ...item, [field]: v } : item);
+    set(k, JSON.stringify(next));
+  };
+
+  return (
+    <div className="reveal grid grid-cols-2 gap-px overflow-hidden rounded-sm bg-[#1a3250] md:grid-cols-4">
+      {items.map((s, i) => (
+        <div key={i} className="bg-[#132840] p-5">
+          <div className="font-serif text-[1.1rem]" style={{ color: accents[i % accents.length] }}><EditInline value={s.name} onChange={(v) => update(i, "name", v)} /></div>
+          <div className="mb-3 font-mono text-[8px] uppercase tracking-[0.3em] text-[#4a6070]"><EditInline value={s.sub} onChange={(v) => update(i, "sub", v)} /></div>
+          <div className="text-[13px] leading-relaxed text-[#7a90a8]"><EditInline value={s.body} onChange={(v) => update(i, "body", v)} /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Bullet list renderers ───────────────────────────────────────────────────
+
+function EBullets({ k }: { k: string }) {
+  return (
+    <EList k={k} render={(items, onChange, onRemove, onAdd) => (
+      <div>
+        <ul className="list-none space-y-0">
+          {items.map((item, i) => (
+            <li key={i} className="reveal relative py-1 pl-6 pr-6 group text-[#b8c8d8] before:absolute before:left-0 before:content-['–'] before:text-[#4a6070]">
+              <EditInline value={item} onChange={(v) => onChange(i, v)} className="inline" />
+              <button onClick={() => onRemove(i)} className="absolute right-0 top-1 text-[#4a6070] opacity-0 group-hover:opacity-100 hover:text-[#d06060] text-xs">×</button>
+            </li>
+          ))}
+        </ul>
+        <button onClick={onAdd} className="ml-6 mt-2 font-mono text-[10px] tracking-[0.2em] text-[#409090] hover:text-[#50b8b0] transition-colors">+ ADD BULLET</button>
+      </div>
+    )} />
+  );
+}
+
+function ENums({ k }: { k: string }) {
+  return (
+    <EList k={k} render={(items, onChange, onRemove, onAdd) => (
+      <div>
+        <ol className="list-none space-y-0">
+          {items.map((item, i) => (
+            <li key={i} className="reveal relative py-1.5 pl-8 pr-6 group text-[#b8c8d8]">
+              <span className="absolute left-0 top-1.5 font-mono text-xs text-[#409090]">{String(i + 1).padStart(2, "0")}</span>
+              <EditInline value={item} onChange={(v) => onChange(i, v)} className="inline" />
+              <button onClick={() => onRemove(i)} className="absolute right-0 top-1.5 text-[#4a6070] opacity-0 group-hover:opacity-100 hover:text-[#d06060] text-xs">×</button>
+            </li>
+          ))}
+        </ol>
+        <button onClick={onAdd} className="ml-8 mt-2 font-mono text-[10px] tracking-[0.2em] text-[#409090] hover:text-[#50b8b0] transition-colors">+ ADD ITEM</button>
+      </div>
+    )} />
+  );
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
+
+export default function Phase1() {
+  const rootRef = useReveal();
+  const [data, setData] = useState<Phase1Data>({ ...DEFAULTS });
+  const [saved, setSaved] = useState<Phase1Data>({ ...DEFAULTS });
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [loaded, setLoaded] = useState(false);
+
+  const isDirty = JSON.stringify(data) !== JSON.stringify(saved);
+
+  const set = useCallback((k: string, v: string) => {
+    setData((prev) => ({ ...prev, [k]: v }));
+  }, []);
+
+  // Load from API then localStorage fallback
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/phase1-draft?draftId=${DRAFT_ID}`);
+        const json = await r.json();
+        if (!cancelled && json.ok && json.found && json.data) {
+          const merged = { ...DEFAULTS, ...json.data };
+          setData(merged);
+          setSaved(merged);
+          setLoaded(true);
+          return;
+        }
+      } catch { /* fall through */ }
+      // Fallback to localStorage
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw && !cancelled) {
+          const parsed = JSON.parse(raw);
+          const merged = { ...DEFAULTS, ...parsed };
+          setData(merged);
+          setSaved(merged);
+        }
+      } catch { /* ignore */ }
+      if (!cancelled) setLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Auto-save to localStorage on change
+  useEffect(() => {
+    if (loaded) {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch { /* ignore */ }
+    }
+  }, [data, loaded]);
+
+  // Save to API
+  const saveToApi = useCallback(async () => {
+    setSaveStatus("saving");
+    try {
+      const r = await fetch("/api/phase1-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId: DRAFT_ID, data }),
+      });
+      const json = await r.json();
+      if (json.ok) {
+        setSaved({ ...data });
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
+    } catch {
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  }, [data]);
+
+  const ctx = { d: data, set };
+
+  return (
+    <Phase1Ctx.Provider value={ctx}>
+      <div ref={rootRef} className="min-h-screen bg-[#0a1520]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="pointer-events-none fixed inset-0 z-[9999] opacity-[0.025]"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundRepeat: "repeat", backgroundSize: "256px" }} />
+
+        {/* SAVE BAR */}
+        {isDirty && (
+          <div className="fixed top-4 right-4 z-[10000] flex items-center gap-3 rounded-sm border border-[#1a3250] bg-[#0e1e30]/95 px-4 py-2.5 shadow-lg backdrop-blur">
+            <div className="font-mono text-[10px] tracking-[0.2em] text-[#d4a855]">UNSAVED CHANGES</div>
+            <button
+              onClick={saveToApi}
+              disabled={saveStatus === "saving"}
+              className="rounded-sm bg-[#409090] px-4 py-1.5 font-mono text-[10px] tracking-[0.2em] text-white transition-colors hover:bg-[#50b8b0] disabled:opacity-50"
+            >
+              {saveStatus === "saving" ? "SAVING…" : "SAVE"}
+            </button>
+          </div>
+        )}
+        {saveStatus === "saved" && !isDirty && (
+          <div className="fixed top-4 right-4 z-[10000] rounded-sm border border-[#409090]/30 bg-[#0e1e30]/95 px-4 py-2.5 font-mono text-[10px] tracking-[0.2em] text-[#50b8b0] shadow-lg backdrop-blur">
+            SAVED ✓
+          </div>
+        )}
+        {saveStatus === "error" && (
+          <div className="fixed top-4 right-4 z-[10000] rounded-sm border border-[#d06060]/30 bg-[#0e1e30]/95 px-4 py-2.5 font-mono text-[10px] tracking-[0.2em] text-[#d06060] shadow-lg backdrop-blur">
+            SAVE FAILED — TRY AGAIN
+          </div>
+        )}
+
+        {/* COVER */}
+        <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+          <div className="font-mono text-[10px] tracking-[0.5em] text-[#7a90a8]">STRATEGIC BRAINSTORM</div>
+          <h1 className="mt-4 font-serif text-[clamp(2rem,5vw,3.2rem)] font-light leading-tight text-[#edf0f5]"><E k="cover_title" /></h1>
+          <div className="mx-auto my-8 h-px w-28 bg-[#4a6070]" />
+          <div className="font-serif text-[1.2rem] font-light text-[#7a90a8]"><E k="cover_subtitle" /></div>
+          <div className="mt-auto pb-12">
+            <div className="mb-2 font-mono text-[9px] tracking-[0.4em] text-[#d06060]">WORKING DOCUMENT</div>
+            <div className="text-sm text-[#4a6070]"><E k="cover_location" /></div>
+            <Link to="/" className="mt-4 inline-block font-mono text-[10px] tracking-[0.3em] text-[#4a6070] transition-colors hover:text-[#409090]">← SPONSOR KIT BUILDER</Link>
+          </div>
+        </div>
+
+        <Divider />
+
+        {/* 01 WHO WE ARE */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="01" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s01_title" /></h2>
+          <p className="reveal mb-4 font-serif text-[1.2rem] leading-[1.9] text-[#b8c8d8]"><EBlock k="s01_intro" /></p>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]"><E k="s01_sub1" /></h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s01_p1" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s01_p2" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s01_p3" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] italic text-[#7a90a8]"><EBlock k="s01_p4" /></p>
+          <MetaLabel>Current Status</MetaLabel>
+          <EBullets k="s01_status" />
+        </section>
+
+        <Divider />
+
+        {/* 02 BRAND FOUNDATION */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="02" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s02_title" /></h2>
+          <MetaLabel>Mission</MetaLabel>
+          <blockquote className="reveal my-8 border-l-2 border-[#409090] py-3 pl-6 pr-6 font-serif text-[1.15rem] italic leading-relaxed text-[#7a90a8]"><EBlock k="s02_mission" /></blockquote>
+          <MetaLabel>Vision</MetaLabel>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s02_vision" /></p>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]">Values</h3>
+          <ELabeledList k="s02_values" />
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]">Voice</h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s02_voiceIntro" /></p>
+          <Spacer h={16} />
+          <div className="reveal grid grid-cols-1 gap-px overflow-hidden rounded-sm bg-[#1a3250] md:grid-cols-3">
+            <ECard labelKey="s02_card1_label" titleKey="s02_card1_title" bodyKey="s02_card1_body" labelColor="#50b8b0" />
+            <ECard labelKey="s02_card2_label" titleKey="s02_card2_title" bodyKey="s02_card2_body" labelColor="#d06060" />
+            <ECard labelKey="s02_card3_label" titleKey="s02_card3_title" bodyKey="s02_card3_body" labelColor="#d4a855" />
+          </div>
+        </section>
+
+        <Divider />
+
+        {/* 03 THREE PHASES */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="03" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s03_title" /></h2>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s03_intro" /></p>
+          <Spacer h={16} />
+          <div className="reveal grid grid-cols-1 gap-px overflow-hidden rounded-sm bg-[#1a3250] md:grid-cols-3">
+            {([
+              { num: "01", tagKey: "s03_p1_tag", descKey: "s03_p1_desc", goalKey: "s03_p1_goal", accent: "#d06060" },
+              { num: "02", tagKey: "s03_p2_tag", descKey: "s03_p2_desc", goalKey: "s03_p2_goal", accent: "#50b8b0" },
+              { num: "03", tagKey: "s03_p3_tag", descKey: "s03_p3_desc", goalKey: "s03_p3_goal", accent: "#d4a855" },
+            ]).map((p) => (
+              <div key={p.num} className="flex flex-col gap-2 bg-[#132840] p-6">
+                <div className="font-mono text-[9px] tracking-[0.5em]" style={{ color: p.accent }}>PHASE {p.num}</div>
+                <div className="font-serif text-[1.1rem] text-[#edf0f5]"><E k={p.tagKey} /></div>
+                <div className="mt-auto border-t border-[#203c5a] pt-3 text-sm text-[#4a6070]"><E k={p.descKey} /></div>
+                <div className="font-mono text-[10px] text-[#4a6070]"><E k={p.goalKey} /></div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Divider />
+
+        {/* PHASE 1 DEEP DIVE */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <div className="reveal py-8">
+            <div className="mb-3 font-mono text-[10px] tracking-[0.6em] text-[#d06060]">PHASE 01</div>
+            <div className="border-b border-[#1a3250] pb-5 font-serif text-[clamp(1.6rem,4vw,2.5rem)] font-light text-[#edf0f5]">
+              &ldquo;<E k="ph1_tagline" />&rdquo;
+            </div>
+            <div className="mt-3 font-serif text-[1.1rem] italic text-[#d06060]"><E k="ph1_geo" /></div>
+          </div>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]"><E k="ph1_innerVoice_title" /></h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_innerVoice_intro" /></p>
+          <VoiceGroup label="The self-roast" k="ph1_voice_selfRoast" color="#d06060" />
+          <VoiceGroup label="The anxious spiral" k="ph1_voice_anxious" color="#f08060" />
+          <VoiceGroup label="The almost-talked-herself-out-of-it" k="ph1_voice_almostQuit" color="#7a90a8" />
+          <VoiceGroup label="The laugh-at-yourself" k="ph1_voice_laugh" color="#d4a855" />
+          <Spacer h={16} />
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_naming" /></p>
+          <MetaLabel>Emotional Purpose</MetaLabel>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_emotional" /></p>
+          <MetaLabel>Strategic Purpose</MetaLabel>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_strategic" /></p>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]"><E k="ph1_ski_title" /></h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><strong className="text-[#edf0f5]"><EBlock k="ph1_ski_intro" /></strong></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_ski_p1" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_ski_p2" /></p>
+          <EBullets k="ph1_ski_bullets" />
+          <Spacer h={8} />
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_ski_p3" /></p>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]"><E k="ph1_fun_title" /></h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_fun_p1" /></p>
+          <blockquote className="reveal my-8 border-l-2 border-[#409090] py-3 pl-6 pr-6 font-serif text-[1.15rem] italic leading-relaxed text-[#7a90a8]"><EBlock k="ph1_fun_quote" /></blockquote>
+          <h3 className="reveal mt-10 mb-3 font-serif text-[1.5rem] font-normal leading-snug text-[#edf0f5]"><E k="ph1_mental_title" /></h3>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_mental_p1" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="ph1_mental_p2" /></p>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] italic text-[#7a90a8]"><EBlock k="ph1_mental_p3" /></p>
+          <MetaLabel>Content Pillars</MetaLabel>
+          <ELabeledList k="ph1_pillars" />
+          <MetaLabel>Content Calendar — First 2 Weeks</MetaLabel>
+          <ECalendar k="ph1_calendar" />
+          <MetaLabel>Key Metrics</MetaLabel>
+          <EBullets k="ph1_metrics" />
+          <MetaLabel>Open Questions</MetaLabel>
+          <EBullets k="ph1_questions" />
+        </section>
+
+        <Divider />
+
+        {/* PHASE 2 + 3 */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <div className="reveal py-8">
+            <div className="mb-3 font-mono text-[10px] tracking-[0.6em] text-[#50b8b0]">PHASE 02</div>
+            <div className="border-b border-[#1a3250] pb-5 font-serif text-[clamp(1.6rem,4vw,2.5rem)] font-light text-[#edf0f5]">
+              &ldquo;<E k="ph2_tagline" />&rdquo;
+            </div>
+          </div>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] italic text-[#7a90a8]"><EBlock k="ph2_intro" /></p>
+          <EBullets k="ph2_bullets" />
+          <p className="reveal mt-6 mb-4 text-[17px] leading-[1.85] italic text-[#50b8b0]">→ Ready to develop when you are.</p>
+          <Spacer h={48} />
+          <div className="reveal py-8">
+            <div className="mb-3 font-mono text-[10px] tracking-[0.6em] text-[#d4a855]">PHASE 03</div>
+            <div className="border-b border-[#1a3250] pb-5 font-serif text-[clamp(1.6rem,4vw,2.5rem)] font-light text-[#edf0f5]">
+              &ldquo;<E k="ph3_tagline" />&rdquo;
+            </div>
+          </div>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] italic text-[#7a90a8]"><EBlock k="ph3_intro" /></p>
+          <EBullets k="ph3_bullets" />
+          <p className="reveal mt-6 mb-4 text-[17px] leading-[1.85] italic text-[#d4a855]">→ Ready to develop when you are.</p>
+        </section>
+
+        <Divider />
+
+        {/* 04 SPONSOR ROADMAP */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="04" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s04_title" /></h2>
+          <p className="reveal mb-4 text-[17px] leading-[1.85] text-[#b8c8d8]"><EBlock k="s04_intro" /></p>
+          <MetaLabel>Stage 1 — Build the Proof</MetaLabel>
+          <EBullets k="s04_stage1" />
+          <MetaLabel>Stage 2 — Create Pitch Materials</MetaLabel>
+          <EBullets k="s04_stage2" />
+          <MetaLabel>Stage 3 — Approach Sponsors</MetaLabel>
+          <ELabeledList k="s04_tiers" />
+          <MetaLabel>What Sponsors Get</MetaLabel>
+          <EBullets k="s04_sponsorGets" />
+        </section>
+
+        <Divider />
+
+        {/* 05 CONTENT STRATEGY */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="05" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s05_title" /></h2>
+          <MetaLabel>Platforms</MetaLabel>
+          <div className="reveal grid grid-cols-1 gap-px overflow-hidden rounded-sm bg-[#1a3250] md:grid-cols-3">
+            <ECard labelKey="s05_card1_label" titleKey="s05_card1_title" bodyKey="s05_card1_body" labelColor="#50b8b0" />
+            <ECard labelKey="s05_card2_label" titleKey="s05_card2_title" bodyKey="s05_card2_body" labelColor="#d06060" />
+            <ECard labelKey="s05_card3_label" titleKey="s05_card3_title" bodyKey="s05_card3_body" labelColor="#7a90a8" />
+          </div>
+          <MetaLabel>Frequency</MetaLabel>
+          <EBullets k="s05_frequency" />
+          <MetaLabel>Seasonal Calendar</MetaLabel>
+          <ESeasons k="s05_seasons" />
+        </section>
+
+        <Divider />
+
+        {/* 06 NEXT STEPS */}
+        <section className="mx-auto max-w-[820px] px-6 py-24">
+          <SectionLabel num="06" />
+          <h2 className="reveal mt-2 mb-8 font-serif text-[clamp(2rem,5vw,3rem)] font-light leading-tight text-[#edf0f5]"><E k="s06_title" /></h2>
+          <MetaLabel>Decisions Needed</MetaLabel>
+          <ENums k="s06_decisions" />
+          <MetaLabel>First Actions — This Month</MetaLabel>
+          <ENums k="s06_actions" />
+          <MetaLabel>What We Build Next</MetaLabel>
+          <EBullets k="s06_buildNext" />
+        </section>
+
+        <Divider />
+
+        {/* CLOSING */}
+        <div className="py-32 text-center">
+          <div className="mx-auto mb-12 h-px w-16 bg-[#1a3250]" />
+          <div className="font-serif text-[1.5rem] font-light text-[#7a90a8]">&ldquo;<E k="closing_quote" />&rdquo;</div>
+          <div className="mt-4 text-[15px] italic text-[#409090]"><E k="closing_attrib" /></div>
+          <div className="mt-16 font-mono text-[9px] tracking-[0.5em] text-[#4a6070]">WOMEN'S ALPINE SCHOOL · 2026</div>
+          <Link to="/" className="mt-6 inline-block font-mono text-[10px] tracking-[0.3em] text-[#4a6070] transition-colors hover:text-[#409090]">← SPONSOR KIT BUILDER</Link>
+        </div>
+
+        <style>{`
+          .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
+          .reveal.visible { opacity: 1; transform: translateY(0); }
+          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap');
+          .font-serif { font-family: 'Cormorant Garamond', serif; }
+          .font-mono { font-family: 'DM Mono', monospace; }
+          [contenteditable]:empty:before { content: 'Click to edit...'; color: #4a6070; font-style: italic; }
+        `}</style>
+      </div>
+    </Phase1Ctx.Provider>
+  );
 }

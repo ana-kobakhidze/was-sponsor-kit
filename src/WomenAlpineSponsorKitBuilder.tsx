@@ -42,6 +42,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import waLogo from "@/assets/wa.png";
 
+function useReveal() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const observe = React.useCallback(() => {
+    if (!ref.current) return;
+    const els = ref.current.querySelectorAll(".reveal");
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+  React.useEffect(observe, [observe]);
+  return ref;
+}
+
 type StepKey =
   | "coreIdentity"
   | "problem"
@@ -1140,37 +1156,37 @@ const StepNavItem = React.memo(function StepNavItem({
       onClick={handleClick}
       className={cx(
         "w-full rounded-2xl px-3 py-3 text-left transition",
-        "border border-transparent hover:border-[#3FA7A3]/25 hover:bg-[#3FA7A3]/5",
-        "focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
-        isActive && "border-[#3FA7A3]/35 bg-[#3FA7A3]/10 shadow-[0_0_0_1px_rgba(63,167,163,0.2)]"
+        "border border-transparent hover:border-[#409090]/25 hover:bg-[#409090]/5",
+        "focus-visible:outline-none focus-visible:border-[#409090]/70 focus-visible:ring-2 focus-visible:ring-[#409090]/30",
+        isActive && "border-[#409090]/35 bg-[#132840] shadow-[0_0_0_1px_rgba(64,144,144,0.2)]"
       )}
     >
       <div className="flex items-start gap-3">
         <div
           className={cx(
-            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#3FA7A3]/25 bg-gradient-to-br from-slate-800/90 to-slate-900/90 text-[#CDEDEC] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-            isActive && "border-[#3FA7A3]/45 from-[#3FA7A3]/20 to-[#1E3A63]/20 text-[#E6F7F6]"
+            "mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-[#1a3250] bg-[#132840] text-[#50b8b0]",
+            isActive && "border-[#409090]/45 bg-[#1a3250] text-[#edf0f5]"
           )}
         >
           {stepIconMap[step.key]}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <div className="truncate text-sm font-semibold text-white">{step.title}</div>
+            <div className="truncate font-serif text-sm font-normal text-white">{step.title}</div>
             {done && (
               <Badge className="border border-emerald-400/20 bg-emerald-500/10 text-emerald-200">
                 გაგზავნილი
               </Badge>
             )}
           </div>
-          <div className="mt-0.5 truncate text-xs text-slate-300">{step.subtitle}</div>
+          <div className="mt-0.5 truncate font-mono text-[10px] text-[#7a90a8]">{step.subtitle}</div>
           <div className="mt-2 flex items-center gap-2">
-            <Badge className="border border-[#1E3A63]/25 bg-[#1E3A63]/10 text-[#BFD0EA]">
+            <Badge className="border border-[#1a3250]/25 bg-[#1a3250]/10 text-[#b8c8d8]">
               {pct}%
             </Badge>
             <div className="h-1.5 flex-1 rounded-full bg-white/10">
               <div
-                className="h-1.5 rounded-full bg-gradient-to-r from-[#E07A83] via-[#1E3A63] to-[#3FA7A3]"
+                className="h-1.5 rounded-full bg-gradient-to-r from-[#d06060] via-[#d4a855] to-[#409090]"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -1211,7 +1227,7 @@ function ChipInputField(props: {
     <div
       className={cx(
         "rounded-md border bg-slate-950/40 p-2",
-        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
+        "border-white/10 focus-within:border-[#409090]/70 focus-within:ring-2 focus-within:ring-[#409090]/30",
         missing && "border-rose-400/40"
       )}
     >
@@ -1219,13 +1235,13 @@ function ChipInputField(props: {
         {chips.map((chip, idx) => (
           <span
             key={`${chip}-${idx}`}
-            className="inline-flex items-center gap-1 rounded-full border border-[#3FA7A3]/30 bg-[#3FA7A3]/10 px-2.5 py-1 text-xs text-[#CDEDEC]"
+            className="inline-flex items-center gap-1 rounded-full border border-[#409090]/30 bg-[#409090]/10 px-2.5 py-1 text-xs text-[#50b8b0]"
           >
             {chip}
             <button
               type="button"
               onClick={() => removeChip(idx)}
-              className="text-[#CDEDEC]/80 hover:text-white"
+              className="text-[#50b8b0]/80 hover:text-white"
               aria-label={`remove ${chip}`}
             >
               x
@@ -1300,7 +1316,7 @@ function HistoryCardsField(props: {
     <div
       className={cx(
         "rounded-md border bg-slate-950/40 p-3",
-        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
+        "border-white/10 focus-within:border-[#409090]/70 focus-within:ring-2 focus-within:ring-[#409090]/30",
         missing && "border-rose-400/40"
       )}
     >
@@ -1309,17 +1325,17 @@ function HistoryCardsField(props: {
         {cards.map((card, idx) => (
           <div
             key={`${card.trainer}-${card.courseName}-${idx}`}
-            className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[#3FA7A3]/35 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-[#1A4C57]/55 p-4 shadow-[0_10px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="relative w-full max-w-xl overflow-hidden rounded-sm border border-[#1a3250] bg-[#132840] p-4 shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-colors hover:bg-[#1a3250]"
           >
-            <div className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-full bg-[#3FA7A3]/15 blur-2xl" />
+            <div className="pointer-events-none absolute right-0 top-0 h-20 w-20 rounded-full bg-[#409090]/15 blur-2xl" />
             <div className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="mb-2 inline-flex items-center rounded-full border border-[#E07A83]/25 bg-[#E07A83]/10 px-2 py-0.5 text-[11px] font-medium text-[#F6D0D4]">
+                  <div className="mb-2 inline-flex items-center rounded-full border border-[#d06060]/25 bg-[#d06060]/10 px-2 py-0.5 text-[11px] font-medium text-[#f08060]">
                     ტრენინგი
                   </div>
                   <div className="text-sm font-semibold text-white">{card.courseName}</div>
-                  <div className="mt-1 inline-flex items-center rounded-full border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 px-2 py-0.5 text-xs text-[#CDEDEC]">
+                  <div className="mt-1 inline-flex items-center rounded-full border border-[#409090]/25 bg-[#409090]/10 px-2 py-0.5 text-xs text-[#50b8b0]">
                     ტრენერი: {card.trainer}
                   </div>
                 </div>
@@ -1336,7 +1352,7 @@ function HistoryCardsField(props: {
               <ul className="space-y-1.5 text-xs text-slate-100">
                 {card.courseIncluded.map((item, itemIdx) => (
                   <li key={itemIdx} className="flex items-start gap-2">
-                    <span className="mt-0.5 text-[#84CFCB]">•</span>
+                    <span className="mt-0.5 text-[#50b8b0]">•</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -1344,7 +1360,7 @@ function HistoryCardsField(props: {
             </div>
             <div className="border-t border-white/10 pt-3">
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full border border-[#1E3A63]/25 bg-[#1E3A63]/10 px-2 py-0.5 text-[11px] text-[#BFD0EA]">
+                <span className="inline-flex items-center rounded-full border border-[#1a3250]/25 bg-[#1a3250]/10 px-2 py-0.5 text-[11px] text-[#b8c8d8]">
                   ფორმატი: {card.format}
                 </span>
                 <span className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-100">
@@ -1375,7 +1391,7 @@ function HistoryCardsField(props: {
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value)}
-            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30"
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#409090]/70 focus-visible:ring-2 focus-visible:ring-[#409090]/30"
           >
             {historyFormatOptions.map((opt) => (
               <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
@@ -1386,7 +1402,7 @@ function HistoryCardsField(props: {
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30"
+            className="flex h-10 w-full rounded-md border bg-slate-950/30 px-3 py-1 text-sm text-slate-200 border-white/10 focus-visible:outline-none focus-visible:border-[#409090]/70 focus-visible:ring-2 focus-visible:ring-[#409090]/30"
           >
             {historyLevelOptions.map((opt) => (
               <option key={opt} value={opt} className="bg-slate-900 text-slate-100">
@@ -1450,7 +1466,7 @@ function ImageUploadField(props: {
     <div
       className={cx(
         "rounded-md border bg-slate-950/40 p-3",
-        "border-white/10 focus-within:border-[#3FA7A3]/70 focus-within:ring-2 focus-within:ring-[#3FA7A3]/30",
+        "border-white/10 focus-within:border-[#409090]/70 focus-within:ring-2 focus-within:ring-[#409090]/30",
         missing && "border-rose-400/40"
       )}
     >
@@ -1460,7 +1476,7 @@ function ImageUploadField(props: {
           accept="image/*,.svg"
           multiple
           onChange={onPickFiles}
-          className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-md file:border file:border-[#3FA7A3]/35 file:bg-[#3FA7A3]/10 file:px-3 file:py-1.5 file:text-[#CDEDEC] hover:file:bg-[#3FA7A3]/20"
+          className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-md file:border file:border-[#409090]/35 file:bg-[#409090]/10 file:px-3 file:py-1.5 file:text-[#50b8b0] hover:file:bg-[#409090]/20"
         />
       </div>
       {images.length > 0 ? (
@@ -1495,7 +1511,7 @@ function ImageUploadField(props: {
 function gradientButtonClass(extra?: string) {
   return cx(
     "relative overflow-hidden border border-white/10 text-white",
-    "bg-gradient-to-r from-[#E07A83] to-[#3FA7A3]",
+    "bg-gradient-to-r from-[#d06060] via-[#1a3250] to-[#409090]",
     "hover:brightness-110 active:brightness-95",
     "shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_12px_30px_rgba(0,0,0,0.35)]",
     extra
@@ -1504,7 +1520,7 @@ function gradientButtonClass(extra?: string) {
 
 function glassCardClass(extra?: string) {
   return cx(
-    "rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900/75 to-slate-950/65 backdrop-blur",
+    "rounded-2xl border border-[#1a3250] bg-[#0e1e30]/90 backdrop-blur",
     "shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.55)]",
     extra
   );
@@ -1537,6 +1553,7 @@ function toDraftSnapshot(payload: DraftStatePayload | null): DraftSnapshot {
 }
 
 export default function WomenAlpineSponsorKitBuilder() {
+  const rootRef = useReveal();
   const [data, setData] = React.useState<DataModel>(emptyData); // draftLocal
   const [draftSaved, setDraftSaved] = React.useState<DraftSnapshot | null>(null);
   const [activeIndex, setActiveIndex] = React.useState<number>(0);
@@ -1712,9 +1729,11 @@ export default function WomenAlpineSponsorKitBuilder() {
   }, [headerLogoSrc]);
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-slate-200">
+    <div ref={rootRef} className="min-h-screen bg-[#0a1520] text-slate-200" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="pointer-events-none fixed inset-0 z-[9999] opacity-[0.025]"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundRepeat: "repeat", backgroundSize: "256px" }} />
       {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-[#3FA7A3]/20 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-900/80 backdrop-blur pt-[env(safe-area-inset-top)]">
+      <div className="sticky top-0 z-30 border-b border-[#1a3250] bg-[#0e1e30]/95 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 lg:hidden">
             <div className="flex items-center">
@@ -1752,8 +1771,8 @@ export default function WomenAlpineSponsorKitBuilder() {
                 )}
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">ქალთა ალპური სკოლა</div>
-                <div className="text-xs text-slate-300">სპონსორებთან გასვლამდე უნდა მივაღწიოთ 80%+</div>
+                <div className="font-serif text-base font-normal text-white">ქალთა ალპური სკოლა</div>
+                <div className="font-mono text-[10px] tracking-[0.2em] text-[#7a90a8]">სპონსორებთან გასვლამდე უნდა მივაღწიოთ 80%+</div>
               </div>
             </div>
 
@@ -1768,7 +1787,7 @@ export default function WomenAlpineSponsorKitBuilder() {
             <div className="flex items-center gap-2 lg:justify-end">
               <Badge
                 className={cx(
-                  "border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]",
+                  "border border-[#409090]/25 bg-[#409090]/10 text-[#50b8b0]",
                   overall >= 80 && "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
                 )}
               >
@@ -1916,10 +1935,10 @@ export default function WomenAlpineSponsorKitBuilder() {
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
+                  <Badge className="border border-[#d06060]/25 bg-[#d06060]/10 text-[#f08060]">
                     ეტაპი {activeIndex + 1} / {steps.length}
                   </Badge>
-                  <Badge className="border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]">
+                  <Badge className="border border-[#409090]/25 bg-[#409090]/10 text-[#50b8b0]">
                     {stepPct}% შევსებული
                   </Badge>
                   {submitted[activeKey] && (
@@ -1934,10 +1953,10 @@ export default function WomenAlpineSponsorKitBuilder() {
 
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h1 className="max-w-4xl text-xl font-semibold leading-tight text-white xl:text-2xl">
+                    <h1 className="max-w-4xl font-serif text-2xl font-light leading-tight text-[#edf0f5] xl:text-3xl">
                       {activeStep.title}
                     </h1>
-                    <p className="mt-2 max-w-3xl text-sm text-slate-300">{activeStep.subtitle}</p>
+                    <p className="mt-2 max-w-3xl text-sm text-[#7a90a8]">{activeStep.subtitle}</p>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
@@ -1980,7 +1999,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-white">
                           {f.label}
-                          {f.required ? <span className="ml-1 text-[#ECA8B0]">*</span> : null}
+                          {f.required ? <span className="ml-1 text-[#d06060]">*</span> : null}
                         </label>
                         {missing ? (
                           <Badge className="border border-rose-400/20 bg-rose-500/10 text-rose-200">
@@ -2006,7 +2025,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                             onChange={(e) => updateField(activeKey, f.key, e.target.value)}
                             className={cx(
                               "flex h-10 w-full rounded-md border bg-slate-950/40 px-3 py-1 text-sm text-slate-200",
-                              "border-white/10 focus-visible:outline-none focus-visible:border-[#3FA7A3]/70 focus-visible:ring-2 focus-visible:ring-[#3FA7A3]/30",
+                              "border-white/10 focus-visible:outline-none focus-visible:border-[#409090]/70 focus-visible:ring-2 focus-visible:ring-[#409090]/30",
                               missing && "border-rose-400/40"
                             )}
                           >
@@ -2068,7 +2087,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       type="button"
                       variant="secondary"
                       onClick={() => saveDraftLocal()}
-                      className="h-10 w-full border border-[#3FA7A3]/30 bg-[#3FA7A3]/10 text-[#CDEDEC] hover:bg-[#3FA7A3]/20 sm:w-auto"
+                      className="h-10 w-full border border-[#409090]/30 bg-[#409090]/10 text-[#50b8b0] hover:bg-[#409090]/20 sm:w-auto"
                     >
                       შენახვა (local)
                     </Button>
@@ -2109,7 +2128,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                       </div>
                     )}
                     {localSaveMessage ? (
-                      <div className="mt-2 text-xs text-[#84CFCB]">{localSaveMessage}</div>
+                      <div className="mt-2 text-xs text-[#50b8b0]">{localSaveMessage}</div>
                     ) : null}
                   </div>
                 </div>
@@ -2135,16 +2154,16 @@ export default function WomenAlpineSponsorKitBuilder() {
 
         {/* Right preview */}
         <div className="hidden space-y-6 xl:block">
-          <Card className={glassCardClass()}>
+          <Card className={glassCardClass("reveal")}>
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white">სპონსორისთვის მზა პრივიუ</div>
+                  <div className="font-serif text-base font-normal text-white">სპონსორისთვის მზა პრივიუ</div>
                   <div className="mt-1 text-xs text-slate-400">
                     1-გვერდიანი პიჩის დრაფტი (ავტომატურად შეჯამებული შევსებული მონაცემებიდან)
                   </div>
                 </div>
-                <Badge className="border border-[#3FA7A3]/25 bg-[#3FA7A3]/10 text-[#CDEDEC]">
+                <Badge className="border border-[#409090]/25 bg-[#409090]/10 text-[#50b8b0]">
                   ცოცხალი
                 </Badge>
               </div>
@@ -2190,14 +2209,14 @@ export default function WomenAlpineSponsorKitBuilder() {
             </div>
           </Card>
 
-          <Card className={glassCardClass()}>
+          <Card className={glassCardClass("reveal")}>
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white">შემოთავაზებული სპონსორები</div>
+                  <div className="font-serif text-base font-normal text-white">შემოთავაზებული სპონსორები</div>
                   <div className="mt-1 text-xs text-slate-400">დროებითი სია</div>
                 </div>
-                <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
+                <Badge className="border border-[#d06060]/25 bg-[#d06060]/10 text-[#f08060]">
                   დრაფტი
                 </Badge>
               </div>
@@ -2217,7 +2236,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                     className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-3 py-2"
                   >
                     <div className="text-sm text-slate-300">{s}</div>
-                    <Badge className="border border-[#E07A83]/25 bg-[#E07A83]/10 text-[#F6D0D4]">
+                    <Badge className="border border-[#d06060]/25 bg-[#d06060]/10 text-[#f08060]">
                       დრაფტი
                     </Badge>
                   </div>
@@ -2245,11 +2264,11 @@ export default function WomenAlpineSponsorKitBuilder() {
             </Button>
           </div>
 
-          <Card className={glassCardClass("p-5")}>
+          <Card className={glassCardClass("reveal p-5")}>
             <div className="flex items-start gap-3">
-              <Scale className="mt-0.5 h-4 w-4 text-slate-300" />
+              <Scale className="mt-0.5 h-4 w-4 text-[#7a90a8]" />
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-white">რჩევა</div>
+                <div className="font-serif text-base font-normal text-white">რჩევა</div>
                 <div className="mt-1 text-xs text-slate-400">
                   სპონსორები ოცნებებს არ აფინანსებენ, ისინი სიცხადეს აფინანსებენ. თავიდანვე შეავსეთ ბიუჯეტი + ზეგავლენა + ხილვადობა.
                 </div>
@@ -2261,16 +2280,24 @@ export default function WomenAlpineSponsorKitBuilder() {
 
       {/* Footer */}
       <div className="mx-auto max-w-[1600px] px-4 pb-8 sm:px-6">
-        <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto h-px w-full mb-6" style={{ background: "linear-gradient(to right, transparent, #1a3250, transparent)" }} />
+        <div className="flex flex-col gap-2 rounded-sm border border-[#1a3250] bg-[#0e1e30] px-4 py-3 font-mono text-[10px] tracking-[0.1em] text-[#4a6070] sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">თემა:</span> მუქი გლასი • ფონი #070A12 • ბარათები slate-950/60
+            <span className="text-[#7a90a8]">WOMEN'S ALPINE SCHOOL</span> <span className="text-[#1a3250]">·</span> SPONSOR KIT BUILDER
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">შენახვა:</span>{" "}
-            <span className="text-slate-200">localStorage</span>
+            <span className="text-[#7a90a8]">STORAGE:</span> localStorage
           </div>
         </div>
       </div>
+
+      <style>{`
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap');
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .font-mono { font-family: 'DM Mono', monospace; }
+      `}</style>
     </div>
   );
 }
