@@ -41,6 +41,9 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import waLogo from "@/assets/wa.png";
+import type { StepKey, DataModel } from "@/lib/types";
+import type { Variant } from "@/lib/generate-api";
+import GenerateModal from "@/components/GenerateModal";
 
 function useReveal() {
   const ref = React.useRef<HTMLDivElement>(null);
@@ -58,18 +61,7 @@ function useReveal() {
   return ref;
 }
 
-type StepKey =
-  | "coreIdentity"
-  | "problem"
-  | "audience"
-  | "program"
-  | "budget"
-  | "impact"
-  | "visibility"
-  | "branding"
-  | "partnerships"
-  | "legalRisk"
-  | "vision";
+// StepKey imported from @/lib/types
 
 type StepDef = {
   key: StepKey;
@@ -94,97 +86,7 @@ type UploadedImage = {
 
 const LOCAL_DRAFT_KEY = "was_sponsor_kit_draft_v1";
 
-type DataModel = {
-  coreIdentity: {
-    officialName: string;
-    legalForm: string;
-    founders: string;
-    instructors: string;
-    instructorCertifications: string;
-    yearsOperating: string;
-    previousExpeditionsHistory: string;
-  };
-  problem: {
-    womenPercent: string; // allow "estimate + source"
-    barriers: string;
-    safetyGaps: string;
-    mediaVisibilityGap: string;
-    evidenceLinks: string;
-  };
-  audience: {
-    ageRange: string;
-    level: string; // beginner/intermediate/mixed
-    urbanRural: string;
-    studentProfessional: string;
-    womenPerYear: string;
-  };
-  program: {
-    duration: string;
-    trainingDaysPerMonth: string;
-    indoorOutdoor: string;
-    highAltitudeComponent: string;
-    finalExpeditionGoal: string;
-    safetyProtocols: string;
-  };
-  budget: {
-    equipmentListWithQty: string;
-    operationalCosts: string;
-    mediaProduction: string;
-    emergencyReserve: string;
-    totalEstimate: string;
-    sponsorshipTiers: string;
-  };
-  impact: {
-    metricsList: string;
-    targets: string;
-    howToMeasure: string;
-    reportingCadence: string;
-  };
-  visibility: {
-    instagram: string;
-    website: string;
-    logoBranding: string;
-    photoVideoAssets: string;
-    pressContacts: string;
-    sponsorBenefitsList: string;
-    contentPlan: string;
-  };
-  branding: {
-    brandEssence: string;
-    targetFeeling: string;
-    brandPersonality: string;
-    primaryColors: string;
-    secondaryColors: string;
-    logoFiles: string;
-    typography: string;
-    logoUsageRules: string;
-    visualStyle: string;
-    voiceTone: string;
-    mandatoryAssets: string;
-  };
-  partnerships: {
-    localGuides: string;
-    rescueServices: string;
-    federations: string;
-    womenNGOs: string;
-    universities: string;
-    outdoorShops: string;
-    statusNotes: string; // contacted/confirmed etc
-  };
-  legalRisk: {
-    waivers: string;
-    insurance: string;
-    emergencyProtocol: string;
-    certifiedInstructors: string;
-    riskMitigation: string;
-  };
-  vision: {
-    oneSeasonVsAnnual: string;
-    expansionPlan: string;
-    futureExpeditionTeam: string;
-    sustainabilityPlan: string;
-  };
-};
+// DataModel imported from @/lib/types
 
 const emptyData: DataModel = {
   coreIdentity: {
@@ -1560,6 +1462,7 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
+  const [generateModal, setGenerateModal] = React.useState<{ open: boolean; variant: Variant }>({ open: false, variant: "one_page_pitch" });
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
@@ -2077,7 +1980,7 @@ export default function WomenAlpineSponsorKitBuilder() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button
                       variant="secondary"
-                      onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი პიჩის ტექსტის ბლოკი.")}
+                      onClick={() => setGenerateModal({ open: true, variant: "one_page_pitch" })}
                       className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
                     >
                       <FileText className="mr-2 h-4 w-4" />
@@ -2248,19 +2151,19 @@ export default function WomenAlpineSponsorKitBuilder() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
               variant="secondary"
-              onClick={() => alert("დროებითი: გენერირდება 1-გვერდიანი PDF.")}
+              onClick={() => setGenerateModal({ open: true, variant: "one_page_pitch" })}
               className="h-11 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
             >
               <FileDown className="mr-2 h-4 w-4" />
-              1-გვერდიანი PDF-ის გენერირება
+              მოკლე პიჩი
             </Button>
 
             <Button
-              onClick={() => alert("დროებითი: სრულ წინადადებად ექსპორტი (10–15 გვერდი).")}
+              onClick={() => setGenerateModal({ open: true, variant: "full_proposal" })}
               className={gradientButtonClass("h-11")}
             >
               <FileText className="mr-2 h-4 w-4" />
-              სრული წინადადების ექსპორტი
+              სრული პიჩი
             </Button>
           </div>
 
@@ -2290,6 +2193,13 @@ export default function WomenAlpineSponsorKitBuilder() {
           </div>
         </div>
       </div>
+
+      <GenerateModal
+        open={generateModal.open}
+        onClose={() => setGenerateModal((prev) => ({ ...prev, open: false }))}
+        dataModel={data}
+        defaultVariant={generateModal.variant}
+      />
 
       <style>{`
         .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
