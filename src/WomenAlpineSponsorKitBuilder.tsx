@@ -1543,26 +1543,65 @@ export default function WomenAlpineSponsorKitBuilder() {
   }, []);
 
   React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as DraftStatePayload;
-        const snapshot = toDraftSnapshot(parsed);
+    const loadDraft = async () => {
+      const DRAFT_ID = "women-alpine-shared-draft";
+      let localData: DraftStatePayload | null = null;
+      let localTimestamp = "";
+
+      // Load from localStorage
+      try {
+        const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as DraftStatePayload;
+          localData = parsed;
+          localTimestamp = parsed.updatedAt ?? "";
+        }
+      } catch {
+        // ignore parse errors
+      }
+
+      // Load from API
+      try {
+        const res = await fetch(`/api/draft?draftId=${encodeURIComponent(DRAFT_ID)}`);
+        if (res.ok) {
+          const json = (await res.json()) as { ok: boolean; found?: boolean; draft?: { data?: DataModel; submitted?: Record<StepKey, boolean>; activeIndex?: number; query?: string; updatedAt?: string } };
+          if (json.found && json.draft) {
+            const apiTimestamp = json.draft.updatedAt ?? "";
+            // Use API data if it's newer (or if no local data exists)
+            if (!localData || apiTimestamp > localTimestamp) {
+              const snapshot = toDraftSnapshot(json.draft);
+              setData(snapshot.data);
+              setSubmitted(snapshot.submitted);
+              setActiveIndex(snapshot.activeIndex);
+              setQuery(snapshot.query);
+              setDraftSaved(snapshot);
+              setLocalSaveMessage("დრაფტი API-დან ჩაიტვირთა.");
+              return;
+            }
+          }
+        }
+      } catch {
+        // network error — fall through to local/defaults
+      }
+
+      // Use local data if newer, otherwise defaults
+      if (localData) {
+        const snapshot = toDraftSnapshot(localData);
         setData(snapshot.data);
         setSubmitted(snapshot.submitted);
         setActiveIndex(snapshot.activeIndex);
         setQuery(snapshot.query);
         setDraftSaved(snapshot);
-        setLocalSaveMessage("დრაფტი ჩაიტვირთა.");
-        return;
+        setLocalSaveMessage("დრაფტი localStorage-დან ჩაიტვირთა.");
+      } else {
+        const snapshot = toDraftSnapshot({ data: emptyData, submitted: INITIAL_SUBMITTED_STATE, activeIndex: 0, query: "" });
+        setData(snapshot.data);
+        setSubmitted(snapshot.submitted);
+        setDraftSaved(snapshot);
       }
-    } catch {
-      // ignore parse errors, fall through to defaults
-    }
-    const snapshot = toDraftSnapshot({ data: emptyData, submitted: INITIAL_SUBMITTED_STATE, activeIndex: 0, query: "" });
-    setData(snapshot.data);
-    setSubmitted(snapshot.submitted);
-    setDraftSaved(snapshot);
+    };
+
+    loadDraft();
   }, []);
 
   const saveDraftLocal = React.useCallback((overrides?: {
@@ -1603,6 +1642,21 @@ export default function WomenAlpineSponsorKitBuilder() {
     setDraftSaved(snapshot);
     saveDraftLocal({ data, submitted: nextSubmitted, message: "ეტაპი შენახულია." });
     setSubmitState({ status: "success", message: "ეტაპი შენახულია ✅" });
+
+    // PATCH to API (fire-and-forget)
+    fetch("/api/draft", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        draftId: "women-alpine-shared-draft",
+        stepKey: activeKey,
+        stepData: data[activeKey],
+        activeIndex,
+        query,
+      }),
+    }).catch(() => {
+      // silently ignore API errors — UI already shows success via localStorage
+    });
   }, [activeKey, data, submitted, activeIndex, query, saveDraftLocal]);
 
   const preview = React.useMemo(() => {
