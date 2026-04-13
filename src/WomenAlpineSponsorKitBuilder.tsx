@@ -19,7 +19,6 @@ import {
   Image as ImageIcon,
   Handshake,
   Palette,
-  Scale,
   Sparkles,
   Menu,
   ChevronLeft,
@@ -929,32 +928,6 @@ function validateStep(data: DataModel, key: StepKey) {
   return { ok: missing.length === 0, missing };
 }
 
-function pickBullets(data: DataModel) {
-  const pool: Array<{ label: string; value: string }> = [
-    { label: "ბარიერები", value: data.problem.barriers },
-    { label: "უსაფრთხოების ხარვეზები", value: data.problem.safetyGaps },
-    { label: "პროგრამა", value: data.program.finalExpeditionGoal },
-    { label: "უსაფრთხოება", value: data.program.safetyProtocols },
-    { label: "ზეგავლენა", value: data.impact.metricsList },
-    { label: "სპონსორის სარგებელი", value: data.visibility.sponsorBenefitsList },
-    { label: "პარტნიორები", value: data.partnerships.statusNotes },
-    { label: "რისკის შემცირება", value: data.legalRisk.riskMitigation },
-    { label: "ხედვა", value: data.vision.expansionPlan },
-  ];
-
-  const bullets = pool
-    .map((p) => {
-      const cleaned = p.value.trim();
-      if (!cleaned) return null;
-      const firstLine = cleaned.split("\n").map((x) => x.trim()).filter(Boolean)[0] ?? cleaned;
-      const shortened = firstLine.length > 120 ? `${firstLine.slice(0, 117)}...` : firstLine;
-      return `${p.label}: ${shortened}`;
-    })
-    .filter(Boolean) as string[];
-
-  return bullets.slice(0, 5);
-}
-
 function parseChips(value: string) {
   return value
     .split(",")
@@ -1660,21 +1633,6 @@ export default function WomenAlpineSponsorKitBuilder() {
     });
   }, [activeKey, data, submitted, activeIndex, query, saveDraftLocal]);
 
-  const preview = React.useMemo(() => {
-    const name = data.coreIdentity.officialName || "ქალთა ალპური სკოლა";
-    const cohort = data.audience.womenPerYear || "—";
-    const duration = data.program.duration || "—";
-    const budget = data.budget.totalEstimate || "—";
-    const bullets = pickBullets(data);
-
-    return {
-      name,
-      cohort,
-      duration,
-      budget,
-      bullets,
-    };
-  }, [data]);
 
   const headerLogoDataUrl = React.useMemo(() => {
     const first = parseUploadedImages(data.branding.logoFiles)[0];
@@ -1710,6 +1668,15 @@ export default function WomenAlpineSponsorKitBuilder() {
               <div className="flex items-center gap-2">
                 <Progress value={overall} className="h-2 flex-1" />
                 <span className="text-sm font-semibold text-white">{overall}%</span>
+                {overall >= 80 && (
+                  <Button
+                    onClick={() => setGenerateModal({ open: true })}
+                    className={gradientButtonClass("h-8 px-3 text-[11px] shrink-0")}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    პიჩი
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -1741,6 +1708,17 @@ export default function WomenAlpineSponsorKitBuilder() {
               </div>
               <Progress value={overall} />
             </div>
+
+            {overall >= 80 && (
+              <Button
+                onClick={() => setGenerateModal({ open: true })}
+                className={gradientButtonClass("h-10")}
+                title={overall >= 80 ? "Form is 80%+ complete. Generate proposal!" : "Complete 80% of form first"}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                სრული პიჩი
+              </Button>
+            )}
 
             <div className="flex items-center gap-2 lg:justify-end">
               <Badge
@@ -2102,115 +2080,62 @@ export default function WomenAlpineSponsorKitBuilder() {
           </div>
         </Card>
 
-        {/* Right preview */}
-        <div className="hidden space-y-6 xl:block">
+        {/* Right panel — Step Progress Tracker */}
+        <div className="hidden space-y-4 xl:block">
           <Card className={glassCardClass("reveal")}>
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-serif text-base font-normal text-white">სპონსორისთვის მზა პრივიუ</div>
-                  <div className="mt-1 text-xs text-slate-400">
-                    1-გვერდიანი პიჩის დრაფტი (ავტომატურად შეჯამებული შევსებული მონაცემებიდან)
-                  </div>
-                </div>
-                <Badge className="border border-[#409090]/25 bg-[#409090]/10 text-[#50b8b0]">
-                  ცოცხალი
-                </Badge>
-              </div>
-
-              <Separator className="my-4 bg-white/10" />
-
-              <div className="space-y-4">
-                <div>
-                  <div className="text-lg font-semibold text-white">{preview.name}</div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    ნაკადის ზომა: <span className="text-slate-200">{preview.cohort}</span> • ხანგრძლივობა:{" "}
-                    <span className="text-slate-200">{preview.duration}</span>
-                  </div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    მთლიანი ბიუჯეტის შეფასება: <span className="text-slate-200">{preview.budget}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="text-xs font-semibold text-white">მთავარი ხაზები</div>
-                  {preview.bullets.length === 0 ? (
-                    <div className="mt-2 text-sm text-slate-500">
-                      შეავსეთ რამდენიმე სექცია და აქ გამოჩნდება 3–5 ძირითადი პუნქტი.
-                    </div>
-                  ) : (
-                    <ul className="mt-2 space-y-2">
-                      {preview.bullets.map((b, idx) => (
-                        <li key={idx} className="text-sm text-slate-300">
-                          • {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="text-xs font-semibold text-white">სპონსორის შეთავაზება (დროებითი)</div>
-                  <div className="mt-2 text-sm text-slate-400">
-                    თქვენი პაკეტები აქ გამოჩნდება, როცა შეავსებთ <span className="text-slate-200">ბიუჯეტის რეალობას</span>.
-                  </div>
+            <div className="p-5 space-y-4">
+              {/* Header: overall progress */}
+              <div className="flex items-center justify-between">
+                <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#4a6070]">FORM PROGRESS</div>
+                <div className={overall >= 80 ? "text-emerald-400 text-sm font-semibold" : "text-white text-sm font-semibold"}>
+                  {overall}%
                 </div>
               </div>
-            </div>
-          </Card>
 
-          <Card className={glassCardClass("reveal")}>
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-serif text-base font-normal text-white">შემოთავაზებული სპონსორები</div>
-                  <div className="mt-1 text-xs text-slate-400">დროებითი სია</div>
+              <Progress value={overall} className="h-1.5" />
+
+              {/* "X% to unlock" or "Ready" message */}
+              {overall >= 80 ? (
+                <div className="text-xs text-emerald-400 flex items-center gap-1.5">
+                  ✓ მზადაა — სრული პიჩის გენერირება შეგიძლიათ
                 </div>
-                <Badge className="border border-[#d06060]/25 bg-[#d06060]/10 text-[#f08060]">
-                  დრაფტი
-                </Badge>
-              </div>
-
-              <Separator className="my-4 bg-white/10" />
-
-              <div className="space-y-2">
-                {[
-                  "გარე სპორტის ბრენდი (ეკიპირების პაკეტი)",
-                  "ადგილობრივი ბანკი ან ფინტექი (ქალთა გაძლიერება)",
-                  "ტურიზმის / სამოგზაურო კომპანია (ამბის თხრობა + აუდიტორია)",
-                  "უნივერსიტეტის პარტნიორი (სტუდენტური ნაკადის მხარდაჭერა)",
-                  "მედია პარტნიორი (ხილვადობა + PR)",
-                ].map((s, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/40 px-3 py-2"
-                  >
-                    <div className="text-sm text-slate-300">{s}</div>
-                    <Badge className="border border-[#d06060]/25 bg-[#d06060]/10 text-[#f08060]">
-                      დრაფტი
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-
-          <Button
-            onClick={() => setGenerateModal({ open: true })}
-            className={gradientButtonClass("h-11 w-full")}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            სრული პიჩი
-          </Button>
-
-          <Card className={glassCardClass("reveal p-5")}>
-            <div className="flex items-start gap-3">
-              <Scale className="mt-0.5 h-4 w-4 text-[#7a90a8]" />
-              <div className="min-w-0">
-                <div className="font-serif text-base font-normal text-white">რჩევა</div>
-                <div className="mt-1 text-xs text-slate-400">
-                  სპონსორები ოცნებებს არ აფინანსებენ, ისინი სიცხადეს აფინანსებენ. თავიდანვე შეავსეთ ბიუჯეტი + ზეგავლენა + ხილვადობა.
+              ) : (
+                <div className="text-xs text-[#4a6070]">
+                  {80 - overall}% დარჩა გენერატორის განსაბლოკად
                 </div>
+              )}
+
+              <Separator className="bg-white/10" />
+
+              {/* Step rows */}
+              <div className="space-y-1">
+                {steps.map((step) => {
+                  const pct = stepCompleteness(data, step.key);
+                  const isActive = step.key === activeKey;
+                  const dotColor = pct >= 80 ? "#3aada8" : pct >= 40 ? "#d4a855" : "#2a3a50";
+                  const textColor = pct >= 80 ? "#50b8b0" : pct >= 40 ? "#d4a855" : "#4a6070";
+                  return (
+                    <button
+                      key={step.key}
+                      onClick={() => onPickStep(step.key)}
+                      className={`w-full flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                        isActive ? "bg-[#132840]" : "hover:bg-[#0e1e30]"
+                      }`}
+                    >
+                      <span style={{ color: dotColor }} className="text-base leading-none">
+                        ●
+                      </span>
+                      <span className={`flex-1 text-xs ${isActive ? "text-slate-200" : "text-[#7a90a8]"}`}>
+                        {step.title}
+                      </span>
+                      {pct > 0 && (
+                        <span style={{ color: textColor }} className="font-mono text-[10px]">
+                          {pct}%
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </Card>
