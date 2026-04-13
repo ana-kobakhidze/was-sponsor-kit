@@ -25,7 +25,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  FileDown,
   FileText,
   CheckCircle2,
   AlertTriangle,
@@ -42,8 +41,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import waLogo from "@/assets/wa.png";
 import type { StepKey, DataModel } from "@/lib/types";
-import type { Variant } from "@/lib/generate-api";
+import type { ProposalData } from "@/lib/proposal-types";
 import GenerateModal from "@/components/GenerateModal";
+import ProposalPreviewModal from "@/components/ProposalPreviewModal";
 
 function useReveal() {
   const ref = React.useRef<HTMLDivElement>(null);
@@ -1462,7 +1462,8 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
-  const [generateModal, setGenerateModal] = React.useState<{ open: boolean; variant: Variant }>({ open: false, variant: "one_page_pitch" });
+  const [generateModal, setGenerateModal] = React.useState<{ open: boolean }>({ open: false });
+  const [proposalPreview, setProposalPreview] = React.useState<{ open: boolean; data: ProposalData | null }>({ open: false, data: null });
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
@@ -2033,14 +2034,6 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <div className="space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button
-                      variant="secondary"
-                      onClick={() => setGenerateModal({ open: true, variant: "one_page_pitch" })}
-                      className="h-10 w-full border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5 sm:w-auto"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      პიჩის ტექსტის წინასწარი ნახვა
-                    </Button>
-                    <Button
                       type="button"
                       variant="secondary"
                       onClick={() => saveDraftLocal()}
@@ -2202,24 +2195,13 @@ export default function WomenAlpineSponsorKitBuilder() {
             </div>
           </Card>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Button
-              variant="secondary"
-              onClick={() => setGenerateModal({ open: true, variant: "one_page_pitch" })}
-              className="h-11 border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              მოკლე პიჩი
-            </Button>
-
-            <Button
-              onClick={() => setGenerateModal({ open: true, variant: "full_proposal" })}
-              className={gradientButtonClass("h-11")}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              სრული პიჩი
-            </Button>
-          </div>
+          <Button
+            onClick={() => setGenerateModal({ open: true })}
+            className={gradientButtonClass("h-11 w-full")}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            სრული პიჩი
+          </Button>
 
           <Card className={glassCardClass("reveal p-5")}>
             <div className="flex items-start gap-3">
@@ -2250,10 +2232,23 @@ export default function WomenAlpineSponsorKitBuilder() {
 
       <GenerateModal
         open={generateModal.open}
-        onClose={() => setGenerateModal((prev) => ({ ...prev, open: false }))}
+        onClose={() => setGenerateModal({ open: false })}
         dataModel={data}
-        defaultVariant={generateModal.variant}
+        onProposalReady={(proposalData) => {
+          setProposalPreview({ open: true, data: proposalData });
+        }}
       />
+
+      {proposalPreview.open && proposalPreview.data && (
+        <ProposalPreviewModal
+          proposalData={proposalPreview.data}
+          onClose={() => setProposalPreview({ open: false, data: null })}
+          onRegenerate={() => {
+            setProposalPreview({ open: false, data: null });
+            setGenerateModal({ open: true });
+          }}
+        />
+      )}
 
       <style>{`
         .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }

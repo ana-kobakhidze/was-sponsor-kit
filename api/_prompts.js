@@ -55,7 +55,13 @@ Generate this exact JSON structure (fill in Georgian + English for all text fiel
       "keyStatsEn": { "label": "value" },
       "contentKa": "main body text (Georgian)",
       "contentEn": "main body text (English)",
-      "type": "text|table|cards|metrics"
+      "type": "text|table|cards|metrics",
+      "tableData": {
+        "headersKa": ["column1", "column2"],
+        "headersEn": ["column1", "column2"],
+        "rowsKa": [["item", "value"], ...],
+        "rowsEn": [["item", "value"], ...]
+      }
     }
   ],
   "contact": {
@@ -67,18 +73,25 @@ Generate this exact JSON structure (fill in Georgian + English for all text fiel
 }
 
 SECTIONS TO GENERATE (use DataModel to populate):
-1. WHO WE ARE (coreIdentity, previousExpeditionsHistory)
-2. WHY WAS (problem, barriers, evidence)
-3. WHO WE SERVE (audience demographics)
-4. THE PROGRAM (duration, training, safety)
-5. BUDGET OVERVIEW (three budget buckets with costs)
-6. RENOVATION BUDGET (detailed line items as table)
-7. WALLS & FIT-OUT (climbing wall details as table)
-8. EXPEDITION GEAR (gear inventory as table)
-9. GYM CAPACITY (visitor stats, capacity metrics)
-10. BRAND VISIBILITY (logo placement, visibility)
-11. PARTNERSHIP TIERS (sponsorship table)
-12. LET'S BUILD (closing call-to-action)
+1. WHO WE ARE (coreIdentity, previousExpeditionsHistory) — type: text
+2. WHY WAS (problem, barriers, evidence) — type: text
+3. WHO WE SERVE (audience demographics) — type: text
+4. THE PROGRAM (duration, training, safety) — type: text
+5. BUDGET OVERVIEW (three budget buckets with costs) — type: metrics
+6. RENOVATION BUDGET (detailed line items as table) — type: table [INCLUDE tableData with: headersEn=["Item", "Cost", "Total"], rowsEn=[...]]
+7. WALLS & FIT-OUT (climbing wall details as table) — type: table [INCLUDE tableData with: headersEn=["Feature", "Dimensions", "Capacity"], rowsEn=[...]]
+8. EXPEDITION GEAR (gear inventory as table) — type: table [INCLUDE tableData with: headersEn=["Gear Item", "Quantity", "Condition"], rowsEn=[...]]
+9. GYM CAPACITY (visitor stats, capacity metrics) — type: metrics
+10. BRAND VISIBILITY (logo placement, visibility) — type: text
+11. PARTNERSHIP TIERS (sponsorship table) — type: table [INCLUDE tableData with: headersEn=["Tier", "Investment", "Benefits"], rowsEn=[...]]
+12. LET'S BUILD (closing call-to-action) — type: text
+
+IMPORTANT INSTRUCTIONS FOR TABLE SECTIONS (06, 07, 08, 11):
+- For sections with "type": "table", you MUST also include a "tableData" object
+- tableData structure: { "headersEn": [...], "headersKa": [...], "rowsEn": [[...], ...], "rowsKa": [[...], ...] }
+- Each row is an array of strings matching the column count
+- Include both Georgian (Ka) and English (En) versions of all table data
+- Keep contentEn/contentKa as narrative text to accompany the table
 
 Design approach:
 - Large section numbers (01, 02, etc.)
