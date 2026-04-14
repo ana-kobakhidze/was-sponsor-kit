@@ -8,9 +8,10 @@ interface Props {
   proposalData: ProposalData;
   onClose: () => void;
   onRegenerate: () => void;
+  apiError?: string;
 }
 
-export default function ProposalPreviewModal({ proposalData, onClose, onRegenerate }: Props) {
+export default function ProposalPreviewModal({ proposalData, onClose, onRegenerate, apiError }: Props) {
   const docRef = React.useRef<HTMLDivElement | null>(null);
   const [exporting, setExporting] = React.useState(false);
 
@@ -138,8 +139,25 @@ export default function ProposalPreviewModal({ proposalData, onClose, onRegenera
           flex: 1,
           overflowY: "auto",
           background: "#1E2B4A",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
+        {apiError && (
+          <div
+            style={{
+              background: "rgba(232, 100, 90, 0.12)",
+              borderBottom: "1px solid rgba(232, 100, 90, 0.3)",
+              color: "#e8645a",
+              padding: "10px 24px",
+              fontSize: 13,
+              fontFamily: "'DM Sans', sans-serif",
+              flexShrink: 0,
+            }}
+          >
+            ⚠ API generation failed — showing default template. {apiError}
+          </div>
+        )}
         <ProposalRenderer proposalData={proposalData} docRef={docRef} />
       </div>
     </div>,

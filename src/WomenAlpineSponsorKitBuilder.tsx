@@ -27,6 +27,7 @@ import {
   FileText,
   CheckCircle2,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,8 @@ import { Link } from "react-router-dom";
 import waLogo from "@/assets/wa.png";
 import type { StepKey, DataModel } from "@/lib/types";
 import type { ProposalData } from "@/lib/proposal-types";
-import GenerateModal from "@/components/GenerateModal";
+import { DEFAULT_PROPOSAL_DATA } from "@/lib/default-proposal";
+import { generateProposal } from "@/lib/generate-api";
 import ProposalPreviewModal from "@/components/ProposalPreviewModal";
 
 function useReveal() {
@@ -1435,8 +1437,8 @@ export default function WomenAlpineSponsorKitBuilder() {
   const [query, setQuery] = React.useState<string>("");
   const [mobileNavOpen, setMobileNavOpen] = React.useState<boolean>(false);
   const [localSaveMessage, setLocalSaveMessage] = React.useState<string>("");
-  const [generateModal, setGenerateModal] = React.useState<{ open: boolean }>({ open: false });
-  const [proposalPreview, setProposalPreview] = React.useState<{ open: boolean; data: ProposalData | null }>({ open: false, data: null });
+  const [generating, setGenerating] = React.useState<boolean>(false);
+  const [proposalPreview, setProposalPreview] = React.useState<{ open: boolean; data: ProposalData | null; apiError?: string }>({ open: false, data: null });
 
   // Per-step save status (for UI feedback)
   const [submitted, setSubmitted] = React.useState<Record<StepKey, boolean>>(INITIAL_SUBMITTED_STATE);
@@ -1505,6 +1507,23 @@ export default function WomenAlpineSponsorKitBuilder() {
       setMobileNavOpen(false);
     }
   }, [shouldLeaveCurrentStep]);
+
+  const handleGenerate = React.useCallback(async () => {
+    setGenerating(true);
+    try {
+      const res = await generateProposal("full_proposal", data);
+      if (res.ok) {
+        const parsed = JSON.parse(res.text) as ProposalData;
+        setProposalPreview({ open: true, data: parsed });
+      } else {
+        setProposalPreview({ open: true, data: DEFAULT_PROPOSAL_DATA, apiError: res.message });
+      }
+    } catch (err) {
+      setProposalPreview({ open: true, data: DEFAULT_PROPOSAL_DATA, apiError: String(err) });
+    } finally {
+      setGenerating(false);
+    }
+  }, [data]);
 
   const updateField = React.useCallback((stepKey: StepKey, fieldKey: string, value: string) => {
     setData((prev) => ({
@@ -1670,11 +1689,18 @@ export default function WomenAlpineSponsorKitBuilder() {
                 <span className="text-sm font-semibold text-white">{overall}%</span>
                 {overall >= 80 && (
                   <Button
-                    onClick={() => setGenerateModal({ open: true })}
+                    onClick={handleGenerate}
+                    disabled={generating}
                     className={gradientButtonClass("h-8 px-3 text-[11px] shrink-0")}
                   >
-                    <FileText className="h-3 w-3 mr-1" />
-                    პიჩი
+                    {generating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <>
+                        <FileText className="h-3 w-3 mr-1" />
+                        პიჩი
+                      </>
+                    )}
                   </Button>
                 )}
               </div>
@@ -1711,11 +1737,16 @@ export default function WomenAlpineSponsorKitBuilder() {
 
             {overall >= 80 && (
               <Button
-                onClick={() => setGenerateModal({ open: true })}
+                onClick={handleGenerate}
+                disabled={generating}
                 className={gradientButtonClass("h-10")}
                 title={overall >= 80 ? "Form is 80%+ complete. Generate proposal!" : "Complete 80% of form first"}
               >
-                <FileText className="mr-2 h-4 w-4" />
+                {generating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
                 სრული პიჩი
               </Button>
             )}
@@ -2155,23 +2186,12 @@ export default function WomenAlpineSponsorKitBuilder() {
         </div>
       </div>
 
-      <GenerateModal
-        open={generateModal.open}
-        onClose={() => setGenerateModal({ open: false })}
-        dataModel={data}
-        onProposalReady={(proposalData) => {
-          setProposalPreview({ open: true, data: proposalData });
-        }}
-      />
-
       {proposalPreview.open && proposalPreview.data && (
         <ProposalPreviewModal
           proposalData={proposalPreview.data}
+          apiError={proposalPreview.apiError}
           onClose={() => setProposalPreview({ open: false, data: null })}
-          onRegenerate={() => {
-            setProposalPreview({ open: false, data: null });
-            setGenerateModal({ open: true });
-          }}
+          onRegenerate={handleGenerate}
         />
       )}
 
