@@ -1,12 +1,14 @@
-# Women's Alpine School Sponsor Kit
+# Women’s Alpine School Sponsor Kit
 
-A Georgian-language web app for drafting a sponsorship proposal for a women's alpine school. The React interface organizes proposal details into sections covering the program, participants, budget, sponsor benefits, and how the school will measure outcomes.
+A Georgian-language React and TypeScript app for drafting sponsorship proposals.
 
-## Explore the interface
+## Try the builder
 
-- Open `/` for the sponsor kit builder and `/phase1` for the Phase 1 view.
-- In the builder, add sample program details, save a draft, and reload. Check that the saved values are restored in the same browser.
-- The builder stores drafts in browser local storage and also attempts to sync with `/api/draft` when that endpoint is available.
+Use sample program details, save a draft, and reload to see it restored. Drafts are saved in browser storage and can sync with a backend when configured.
+
+## AI-assisted drafting
+
+The server-side Claude integration can generate a full proposal, a one-page pitch, an outreach email, or a sponsorship tier card. The generation endpoint uses the server-side `ANTHROPIC_API_KEY` environment variable.
 
 ## Run locally
 
@@ -17,8 +19,4 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. Run `npm run build` to type-check and create a production build, or `npm run lint` to check the source.
-
-## Stack
-
-React 19, TypeScript, Vite, React Router, and Tailwind CSS.
+Use `npm run build` and `npm run lint` to check the project.
